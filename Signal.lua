@@ -20,10 +20,37 @@
    along with Luasofia.  If not, see <http://www.gnu.org/licenses/>.
 --]]
 
+
+Signal = {} --Internal attributes goes on this table
+
+
 function Signal:new (object)
     object = object or {}      --create table if user does no provide one.
     setmetatable(object, self) -- self is the Signal table. Set the metatable of the new object as the Signal table (inherits Signal).
     self.__index = self
     return object
 end
+
+function Signal:disconnect(self, handler_function)
+
+end
+
+function Signal:connect(self, handler_function)
+
+end
+
+function Signal:block(self, handler_function)
+
+end
+
+function Signal:unblock(self, handler_function)
+
+end
+
+function Signal:emit(self, ...)
+
+end
+
+
+
 
