@@ -1,0 +1,34 @@
+=============================================================
+README / LuaNotify is a Lua package providing tools for implementing observer programming pattern
+=============================================================
+
+Introduction
+------------
+LuaNotify is inspired on many libraries that do event dispatching, like
+py-notify, GSignals, QT event system, wxWidgets event system, etc. 
+But we tried to do something different that can make use of Lua resources 
+and to be more Lua-ish as possible. 
+
+Quick start
+-----------
+Just copy the *.lua files to your project directory and use it or 
+copy it to the Lua default module search path so Lua can find it.  
+
+
+References
+----------
+
+Project website:
+- http://wiki.github.com/katcipis/Luanotify 
+
+Version control repositories:
+- http://github.com/katcipis/Luanotify.git
+  git://github.com/katcipis/Luanotify.git
+
+
+Licensing
+---------
+
+LuaSofia is licensed under terms of the GNU LGPL.
+See the file "COPYING" for more information.
+                                                                 
