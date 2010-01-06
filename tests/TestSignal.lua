@@ -12,11 +12,11 @@ function test_if_a_handler_function_is_connected_it_will_always_be_called()
 
     local handler = function () handler_counter = handler_counter + 1 end
 
-    signal.connect(handler)
+    signal:connect(handler)
     assert_equal(0, handler_counter)
-    signal.emit()
+    signal:emit()
     assert_equal(1, handler_counter)
-    signal.emit()
+    signal:emit()
     assert_equal(2, handler_counter) 
 end
 

@@ -20,12 +20,13 @@
    along with Luasofia.  If not, see <http://www.gnu.org/licenses/>.
 --]]
 
-Signal = {} --Class attributes and methods goes on this table
+Signal = {} --Class attributes and methods goes on this table.
 
 function Signal:new (object)
     object = object or {}      --create table if user does no provide one.
     setmetatable(object, self) -- self is the Signal table. Set the metatable of the new object as the Signal table (inherits Signal).
     self.__index = self
+    object._handlers = {}
     return object
 end
 
@@ -34,7 +35,7 @@ function Signal:disconnect(handler_function)
 end
 
 function Signal:connect(handler_function)
-
+    table.insert(self._handlers, handler_function)
 end
 
 function Signal:block(handler_function)
@@ -46,7 +47,7 @@ function Signal:unblock(handler_function)
 end
 
 function Signal:emit(...)
-
+    for _,handler in ipairs(self._handlers) do handler(...) end
 end
 
 
