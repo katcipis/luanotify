@@ -22,6 +22,18 @@
 
 Signal = {} --Class attributes and methods goes on this table.
 
+-- private functions
+
+local function get_handler_table(handlers, handler_function)
+          for pos, handler_table in ipairs(handlers) do
+              if(handler_table.handler == handler_function) then
+                  return pos, handler_table
+              end
+          end
+      end
+
+-- Class definition and methods
+
 function Signal:new (object)
     object = object or {}      --create table if user does no provide one.
     setmetatable(object, self) -- self is the Signal table. Set the metatable of the new object as the Signal table (inherits Signal).
@@ -31,28 +43,33 @@ function Signal:new (object)
 end
 
 function Signal:disconnect(handler_function)
-    for pos, handler in ipairs(self._handlers) do
-        if(handler == handler_function) then
-            table.remove(self._handlers, pos)
-            return
-        end
-    end
+    pos, handler_table = get_handler_table(self._handlers, handler_function)
+    if(pos) then table.remove(self._handlers, pos) end
 end
 
 function Signal:connect(handler_function)
-    table.insert(self._handlers, handler_function)
+    table.insert(self._handlers, { handler = handler_function,
+                                   block   = 0 })
 end
 
 function Signal:block(handler_function)
-
+    pos, handler_table = get_handler_table(self._handlers, handler_function)
+    handler_table.block = handler_table.block + 1
 end
 
 function Signal:unblock(handler_function)
-
+    pos, handler_table = get_handler_table(self._handlers, handler_function)
+    if(handler_table.block > 0) then
+        handler_table.block = handler_table.block - 1
+    end
 end
 
 function Signal:emit(...)
-    for _,handler in ipairs(self._handlers) do handler(...) end
+    for _,handler_table in ipairs(self._handlers) do 
+        if(handler_table.block == 0) then
+            handler_table.handler(...)
+        end
+    end
 end
 
 

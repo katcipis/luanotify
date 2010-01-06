@@ -162,18 +162,97 @@ function test_if_a_handler_is_disconnected_the_order_of_the_remaining_handlers_w
 end
 
 function test_if_a_handler_is_disconnected_it_will_not_be_called_anymore()
+    local handler = function () handler_counter = handler_counter + 1 end
+
+    signal:connect(handler)
+    assert_equal(0, handler_counter)
+    signal:emit()
+    assert_equal(1, handler_counter)
+    signal:disconnect(handler)
+    signal:emit()
+    assert_equal(1, handler_counter)
 end
 
 function test_if_a_handler_got_blocked_it_wont_be_called_on_emission()
+    local handler = function () handler_counter = handler_counter + 1 end
+
+    signal:connect(handler)
+    assert_equal(0, handler_counter)
+    signal:emit()
+    assert_equal(1, handler_counter)
+    signal:block(handler)
+    signal:emit()
+    assert_equal(1, handler_counter)
+    signal:emit()
+    assert_equal(1, handler_counter)
 end
 
 function test_a_blocked_handler_can_be_unblocked()
+    local handler = function () handler_counter = handler_counter + 1 end
+
+    signal:connect(handler)
+    assert_equal(0, handler_counter)
+    signal:emit()
+    assert_equal(1, handler_counter)
+    signal:block(handler)
+    signal:emit()
+    assert_equal(1, handler_counter)
+    signal:unblock(handler)
+    signal:emit()
+    assert_equal(2, handler_counter)
 end
 
 function test_a_unblocked_handler_will_be_called_on_its_original_position()
+    handler1 = function ()
+                  assert_equal(0, handler_counter)
+                  handler_counter = handler_counter + 1
+               end
+
+    handler2 = function ()
+                  assert_equal(1, handler_counter)
+                  handler_counter = handler_counter + 1
+               end
+
+    handler3 = function (offset)
+                  local offset = offset or 0
+                  assert_equal(2 - offset, handler_counter)
+                  handler_counter = handler_counter + 1
+               end
+
+    signal:connect(handler1)
+    signal:connect(handler2)
+    signal:connect(handler3)
+    signal:block(handler2)
+    signal:emit(1)
+ 
+    handler_counter = 0
+    signal:unblock(handler2)
+    signal:emit()   
+
 end
 
 function test_a_handler_must_be_unblocked_the_same_times_it_has_been_blocked()
+    local handler = function () handler_counter = handler_counter + 1 end
+
+    signal:connect(handler)
+    signal:block(handler)
+    signal:block(handler)
+    signal:block(handler)
+
+    signal:emit()
+    assert_equal(0, handler_counter)
+    
+    signal:unblock(handler)
+    signal:emit()
+    assert_equal(0, handler_counter)
+
+    signal:unblock(handler)
+    signal:emit()
+    assert_equal(0, handler_counter)
+
+    signal:unblock(handler)
+    signal:emit()
+    assert_equal(1, handler_counter)
 end
 
 
