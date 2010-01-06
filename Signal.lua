@@ -31,7 +31,12 @@ function Signal:new (object)
 end
 
 function Signal:disconnect(handler_function)
-
+    for pos, handler in ipairs(self._handlers) do
+        if(handler == handler_function) then
+            table.remove(self._handlers, pos)
+            return
+        end
+    end
 end
 
 function Signal:connect(handler_function)
