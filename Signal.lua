@@ -20,9 +20,7 @@
    along with Luasofia.  If not, see <http://www.gnu.org/licenses/>.
 --]]
 
-
-Signal = {} --Internal attributes goes on this table
-
+Signal = {} --Class attributes and methods goes on this table
 
 function Signal:new (object)
     object = object or {}      --create table if user does no provide one.
@@ -31,23 +29,23 @@ function Signal:new (object)
     return object
 end
 
-function Signal:disconnect(self, handler_function)
+function Signal:disconnect(handler_function)
 
 end
 
-function Signal:connect(self, handler_function)
+function Signal:connect(handler_function)
 
 end
 
-function Signal:block(self, handler_function)
+function Signal:block(handler_function)
 
 end
 
-function Signal:unblock(self, handler_function)
+function Signal:unblock(handler_function)
 
 end
 
-function Signal:emit(self, ...)
+function Signal:emit(...)
 
 end
 
