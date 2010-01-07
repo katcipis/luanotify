@@ -255,5 +255,44 @@ function test_a_handler_must_be_unblocked_the_same_times_it_has_been_blocked()
     assert_equal(1, handler_counter)
 end
 
+function test_set_up_functions_are_always_called_before_the_handlers()
+
+end
+
+function test_set_up_functions_are_called_only_once_before_the_handlers()
+
+end
+
+function test_no_emission_data_is_passed_to_the_set_up_functions()
+
+end
+
+function test_after_being_removed_a_set_up_function_wont_be_called_anymore()
+
+end
+
+function test_set_up_functions_return_values_are_not_passed_to_the_accumulator()
+
+end
+
+function test_tear_down_functions_are_always_called_after_the_handlers()
+
+end
+
+function test_tear_down_functions_are_called_only_once_after_the_handlers()
+
+end
+
+function test_no_emission_data_is_passed_to_the_tear_down_functions()
+
+end
+
+function test_after_being_removed_a_tear_down_function_wont_be_called_anymore()
+
+end
+
+function test_tear_down_functions_return_values_are_not_passed_to_the_accumulator()
+
+end
 
 lunit.main()
