@@ -22,7 +22,7 @@
 
 
 require "lunit"
-require "Signal"
+require "luanotify.Signal"
 
 module("Signal_testcase", lunit.testcase, package.seeall)
 
