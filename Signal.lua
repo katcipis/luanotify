@@ -72,6 +72,26 @@ function Signal:emit(...)
     end
 end
 
+function Signal:emit_with_accumulator(accumulator, ...)
 
+end
 
+function Signal:add_set_up(set_up_func)
 
+end
+
+function Signal:remove_set_up(set_up_func)
+
+end
+
+function Signal:add_tear_down(tear_down_func)
+
+end
+
+function Signal:remove_tear_down(tear_down_func)
+
+end
+
+function Signal:stop()
+
+end
