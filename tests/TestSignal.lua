@@ -213,6 +213,18 @@ function test_if_a_handler_got_blocked_it_wont_be_called_on_emission()
 end
 
 
+function test_if_you_block_a_handler_that_does_not_exist_nothing_happens()
+    local handler = function () handler_counter = handler_counter + 1 end
+    signal:block(handler)
+end
+
+
+function test_if_you_unblock_a_handler_that_does_not_exist_nothing_happens()
+    local handler = function () handler_counter = handler_counter + 1 end
+    signal:unblock(handler)
+end
+
+
 function test_a_blocked_handler_can_be_unblocked()
     local handler = function () handler_counter = handler_counter + 1 end
 
@@ -302,6 +314,21 @@ function test_set_up_functions_are_always_called_before_the_handlers()
     signal:connect(handler2)
     signal:add_set_up(set_up)
     signal:emit()
+end
+
+
+function test_the_same_set_up_can_be_added_on_multiple_signals()
+    local set_up = function () handler_counter = handler_counter + 1 end
+    local signal2 = Signal:new()
+
+    signal:add_set_up(set_up)
+    signal2:add_set_up(set_up)
+
+    assert_equal(0, handler_counter)
+    signal:emit()
+    assert_equal(1, handler_counter)
+    signal2:emit()
+    assert_equal(2, handler_counter)
 end
 
 
@@ -488,6 +515,21 @@ function test_tear_down_functions_are_always_called_after_the_handlers()
     signal:add_tear_down(tear_down)
     signal:emit()
     assert_equal(3, handler_counter)
+end
+
+
+function test_the_same_tear_down_can_be_added_on_multiple_signals()
+    local tear_down = function () handler_counter = handler_counter + 1 end
+    local signal2 = Signal:new()
+
+    signal:add_tear_down(tear_down)
+    signal2:add_tear_down(tear_down)
+
+    assert_equal(0, handler_counter)
+    signal:emit()
+    assert_equal(1, handler_counter)
+    signal2:emit()
+    assert_equal(2, handler_counter)
 end
 
 
