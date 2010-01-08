@@ -28,7 +28,7 @@ module("Signal_testcase", lunit.testcase, package.seeall)
 
 function setUp()
     signal = Signal:new()
-    handler_counter = 0
+    call_counter = 0
 end
 
 function tearDown()
@@ -38,38 +38,38 @@ end
 
 function test_if_a_handler_function_is_connected_it_will_always_be_called_when_a_emission_occurs()
 
-    local handler = function () handler_counter = handler_counter + 1 end
+    local handler = function () call_counter = call_counter + 1 end
 
     signal:connect(handler)
-    assert_equal(0, handler_counter)
+    assert_equal(0, call_counter)
     signal:emit()
-    assert_equal(1, handler_counter)
+    assert_equal(1, call_counter)
     signal:emit()
-    assert_equal(2, handler_counter) 
+    assert_equal(2, call_counter) 
 end
 
 
 function test_if_there_is_no_handler_connected_emission_does_nothing()
-    assert_equal(0, handler_counter)
+    assert_equal(0, call_counter)
     signal:emit()
-    assert_equal(0, handler_counter)
+    assert_equal(0, call_counter)
 end
 
 
 function test_handlers_are_called_on_the_order_they_are_inserted()
     handler1 = function ()
-                   assert_equal(0, handler_counter)
-                   handler_counter = handler_counter + 1
+                   assert_equal(0, call_counter)
+                   call_counter = call_counter + 1
                end
 
     handler2 = function ()
-                   assert_equal(1, handler_counter)
-                   handler_counter = handler_counter + 1
+                   assert_equal(1, call_counter)
+                   call_counter = call_counter + 1
                end
 
     handler3 = function ()
-                   assert_equal(2, handler_counter)
-                   handler_counter = handler_counter + 1
+                   assert_equal(2, call_counter)
+                   call_counter = call_counter + 1
                end
 
      signal:connect(handler1)
@@ -106,52 +106,52 @@ end
 
 function test_if_the_same_handler_is_connected_multiple_times_it_will_be_called_only_once()
     handler = function ()
-                  handler_counter = handler_counter + 1
+                  call_counter = call_counter + 1
               end
 
     signal:connect(handler)
     signal:connect(handler)
     signal:connect(handler)
     signal:emit()
-    assert_equal(1, handler_counter)
+    assert_equal(1, call_counter)
 end
 
 
 function test_if_the_same_handler_is_connected_multiple_times_it_has_to_be_disconnected_only_once()
     handler = function ()
-                  handler_counter = handler_counter + 1
+                  call_counter = call_counter + 1
               end
     
     signal:connect(handler)
     signal:connect(handler)
     signal:connect(handler)
     signal:emit()
-    assert_equal(1, handler_counter)
+    assert_equal(1, call_counter)
     signal:disconnect(handler)
     signal:emit()
-    assert_equal(1, handler_counter)
+    assert_equal(1, call_counter)
 end
 
 
 function test_the_same_handler_can_be_connected_on_multiple_signals()
-    local handler = function () handler_counter = handler_counter + 1 end
+    local handler = function () call_counter = call_counter + 1 end
     local signal2 = Signal:new()
     
     signal:connect(handler)
     signal2:connect(handler)
 
-    assert_equal(0, handler_counter)
+    assert_equal(0, call_counter)
     signal:emit()
-    assert_equal(1, handler_counter)
+    assert_equal(1, call_counter)
     signal2:emit()
-    assert_equal(2, handler_counter)
+    assert_equal(2, call_counter)
 end
 
 
 function test_if_you_disconnect_a_handler_that_is_not_connected_nothing_happens()
     handler  = function ()
-                  assert_equal(0, handler_counter)
-                  handler_counter = handler_counter + 1
+                  assert_equal(0, call_counter)
+                  call_counter = call_counter + 1
                end
     signal:disconnect(handler)
 end
@@ -159,19 +159,19 @@ end
 
 function test_if_a_handler_is_disconnected_the_order_of_the_remaining_handlers_wont_change()
     handler1 = function ()
-                  assert_equal(0, handler_counter)
-                  handler_counter = handler_counter + 1
+                  assert_equal(0, call_counter)
+                  call_counter = call_counter + 1
                end
 
     handler2 = function ()
-                  assert_equal(1, handler_counter)
-                  handler_counter = handler_counter + 1
+                  assert_equal(1, call_counter)
+                  call_counter = call_counter + 1
                end
 
     handler3 = function (offset)
                   local offset = offset or 0
-                  assert_equal(2 - offset, handler_counter)
-                  handler_counter = handler_counter + 1
+                  assert_equal(2 - offset, call_counter)
+                  call_counter = call_counter + 1
                end
 
     signal:connect(handler1)
@@ -180,82 +180,82 @@ function test_if_a_handler_is_disconnected_the_order_of_the_remaining_handlers_w
     signal:emit()
 
     signal:disconnect(handler2)
-    handler_counter = 0
+    call_counter = 0
     signal:emit(1)
 end
 
 
 function test_if_a_handler_is_disconnected_it_will_not_be_called_anymore()
-    local handler = function () handler_counter = handler_counter + 1 end
+    local handler = function () call_counter = call_counter + 1 end
 
     signal:connect(handler)
-    assert_equal(0, handler_counter)
+    assert_equal(0, call_counter)
     signal:emit()
-    assert_equal(1, handler_counter)
+    assert_equal(1, call_counter)
     signal:disconnect(handler)
     signal:emit()
-    assert_equal(1, handler_counter)
+    assert_equal(1, call_counter)
 end
 
 
 function test_if_a_handler_got_blocked_it_wont_be_called_on_emission()
-    local handler = function () handler_counter = handler_counter + 1 end
+    local handler = function () call_counter = call_counter + 1 end
 
     signal:connect(handler)
-    assert_equal(0, handler_counter)
+    assert_equal(0, call_counter)
     signal:emit()
-    assert_equal(1, handler_counter)
+    assert_equal(1, call_counter)
     signal:block(handler)
     signal:emit()
-    assert_equal(1, handler_counter)
+    assert_equal(1, call_counter)
     signal:emit()
-    assert_equal(1, handler_counter)
+    assert_equal(1, call_counter)
 end
 
 
 function test_if_you_block_a_handler_that_does_not_exist_nothing_happens()
-    local handler = function () handler_counter = handler_counter + 1 end
+    local handler = function () call_counter = call_counter + 1 end
     signal:block(handler)
 end
 
 
 function test_if_you_unblock_a_handler_that_does_not_exist_nothing_happens()
-    local handler = function () handler_counter = handler_counter + 1 end
+    local handler = function () call_counter = call_counter + 1 end
     signal:unblock(handler)
 end
 
 
 function test_a_blocked_handler_can_be_unblocked()
-    local handler = function () handler_counter = handler_counter + 1 end
+    local handler = function () call_counter = call_counter + 1 end
 
     signal:connect(handler)
-    assert_equal(0, handler_counter)
+    assert_equal(0, call_counter)
     signal:emit()
-    assert_equal(1, handler_counter)
+    assert_equal(1, call_counter)
     signal:block(handler)
     signal:emit()
-    assert_equal(1, handler_counter)
+    assert_equal(1, call_counter)
     signal:unblock(handler)
     signal:emit()
-    assert_equal(2, handler_counter)
+    assert_equal(2, call_counter)
 end
 
 
 function test_a_unblocked_handler_will_be_called_on_its_original_position()
     handler1 = function ()
-                  assert_equal(0, handler_counter)
-                  handler_counter = handler_counter + 1
+                  assert_equal(0, call_counter)
+                  call_counter = call_counter + 1
                end
 
     handler2 = function ()
-                  assert_equal(1, handler_counter)
-                  handler_counter = handler_counter + 1
+                  assert_equal(1, call_counter)
+                  call_counter = call_counter + 1
                end
 
     handler3 = function (offset)
                   local offset = offset or 0
-                  assert_equal(2 - offset, handler_counter)
-                  handler_counter = handler_counter + 1
+                  assert_equal(2 - offset, call_counter)
+                  call_counter = call_counter + 1
                end
 
     signal:connect(handler1)
@@ -264,14 +264,14 @@ function test_a_unblocked_handler_will_be_called_on_its_original_position()
     signal:block(handler2)
     signal:emit(1)
  
-    handler_counter = 0
+    call_counter = 0
     signal:unblock(handler2)
     signal:emit()   
 end
 
 
 function test_a_handler_must_be_unblocked_the_same_times_it_has_been_blocked()
-    local handler = function () handler_counter = handler_counter + 1 end
+    local handler = function () call_counter = call_counter + 1 end
 
     signal:connect(handler)
     signal:block(handler)
@@ -279,35 +279,35 @@ function test_a_handler_must_be_unblocked_the_same_times_it_has_been_blocked()
     signal:block(handler)
 
     signal:emit()
-    assert_equal(0, handler_counter)
+    assert_equal(0, call_counter)
     
     signal:unblock(handler)
     signal:emit()
-    assert_equal(0, handler_counter)
+    assert_equal(0, call_counter)
 
     signal:unblock(handler)
     signal:emit()
-    assert_equal(0, handler_counter)
+    assert_equal(0, call_counter)
 
     signal:unblock(handler)
     signal:emit()
-    assert_equal(1, handler_counter)
+    assert_equal(1, call_counter)
 end
 
 
 function test_set_up_functions_are_always_called_before_the_handlers()
     handler1 = function ()
-                  assert_equal(0, handler_counter)
-                  handler_counter = handler_counter + 1
+                  assert_equal(0, call_counter)
+                  call_counter = call_counter + 1
                end
 
     handler2 = function ()
-                  assert_equal(1, handler_counter)
-                  handler_counter = handler_counter + 1
+                  assert_equal(1, call_counter)
+                  call_counter = call_counter + 1
                end
 
     set_up =   function ()
-                  assert_equal(0 , handler_counter)
+                  assert_equal(0 , call_counter)
                end
 
     signal:connect(handler1)
@@ -318,63 +318,63 @@ end
 
 
 function test_the_same_set_up_can_be_added_on_multiple_signals()
-    local set_up = function () handler_counter = handler_counter + 1 end
+    local set_up = function () call_counter = call_counter + 1 end
     local signal2 = Signal:new()
 
     signal:add_set_up(set_up)
     signal2:add_set_up(set_up)
 
-    assert_equal(0, handler_counter)
+    assert_equal(0, call_counter)
     signal:emit()
-    assert_equal(1, handler_counter)
+    assert_equal(1, call_counter)
     signal2:emit()
-    assert_equal(2, handler_counter)
+    assert_equal(2, call_counter)
 end
 
 
 function test_if_the_same_set_up_is_added_multiple_times_it_will_be_called_only_once()
     set_up = function ()
-                 handler_counter = handler_counter + 1
+                 call_counter = call_counter + 1
              end
     
     signal:add_set_up(set_up)
     signal:add_set_up(set_up)
     signal:add_set_up(set_up)
     signal:emit()
-    assert_equal(1, handler_counter)
+    assert_equal(1, call_counter)
 end
 
 
 function test_if_the_same_set_up_is_added_multiple_times_it_has_to_be_removed_only_once()
     set_up = function ()
-                 handler_counter = handler_counter + 1
+                 call_counter = call_counter + 1
              end
                   
     signal:add_set_up(set_up)
     signal:add_set_up(set_up)
     signal:add_set_up(set_up)
     signal:emit()
-    assert_equal(1, handler_counter)
+    assert_equal(1, call_counter)
     signal:remove_set_up(set_up)
     signal:emit()
-    assert_equal(1, handler_counter)
+    assert_equal(1, call_counter)
 end
 
 
 function test_set_up_functions_are_called_on_the_order_they_are_inserted()
     handler  = function ()
-                  assert_equal(2, handler_counter)
-                  handler_counter = handler_counter + 1
+                  assert_equal(2, call_counter)
+                  call_counter = call_counter + 1
                end
 
     set_up1 = function ()
-                  assert_equal(0, handler_counter)
-                  handler_counter = handler_counter + 1
+                  assert_equal(0, call_counter)
+                  call_counter = call_counter + 1
                end
 
     set_up2 = function ()
-                  assert_equal(1, handler_counter)
-                  handler_counter = handler_counter + 1
+                  assert_equal(1, call_counter)
+                  call_counter = call_counter + 1
                end
 
     signal:connect(handler)
@@ -387,7 +387,7 @@ end
 
 function test_if_you_remove_a_set_up_that_does_not_exist_nothing_happens()
     set_up   = function ()
-                  assert_equal(0, handler_counter)
+                  assert_equal(0, call_counter)
                end
 
     signal:remove_set_up(set_up)
@@ -396,19 +396,19 @@ end
 
 function test_after_removing_a_set_up_function_the_order_of_the_set_ups_remain_the_same()
     set_up1 = function ()
-                  assert_equal(0, handler_counter)
-                  handler_counter = handler_counter + 1
+                  assert_equal(0, call_counter)
+                  call_counter = call_counter + 1
                end
 
     set_up2 = function ()
-                  assert_equal(1, handler_counter)
-                  handler_counter = handler_counter + 1
+                  assert_equal(1, call_counter)
+                  call_counter = call_counter + 1
                end
 
     local offset = 0
     set_up3 = function ()
-                  assert_equal(2 - offset, handler_counter)
-                  handler_counter = handler_counter + 1
+                  assert_equal(2 - offset, call_counter)
+                  call_counter = call_counter + 1
                end
 
     signal:add_set_up(set_up1)
@@ -417,7 +417,7 @@ function test_after_removing_a_set_up_function_the_order_of_the_set_ups_remain_t
     signal:emit()
 
     signal:remove_set_up(set_up2)
-    offset = 1; handler_counter = 0
+    offset = 1; call_counter = 0
     signal:emit()
 
 end
@@ -425,18 +425,18 @@ end
 
 function test_set_up_functions_are_called_only_once_before_the_handlers()
     handler1 = function ()
-                  assert_equal(1, handler_counter)
-                  handler_counter = handler_counter + 1
+                  assert_equal(1, call_counter)
+                  call_counter = call_counter + 1
                end
 
     handler2 = function ()
-                  assert_equal(2, handler_counter)
-                  handler_counter = handler_counter + 1
+                  assert_equal(2, call_counter)
+                  call_counter = call_counter + 1
                end
 
     set_up =   function ()
-                  assert_equal(0 , handler_counter)
-                  handler_counter = handler_counter + 1
+                  assert_equal(0 , call_counter)
+                  call_counter = call_counter + 1
                end
 
     signal:connect(handler1)
@@ -463,19 +463,19 @@ end
 
 function test_after_being_removed_a_set_up_function_wont_be_called_anymore()
     set_up1 = function ()
-                  assert_equal(0, handler_counter)
-                  handler_counter = handler_counter + 1
+                  assert_equal(0, call_counter)
+                  call_counter = call_counter + 1
                end
 
     set_up2 = function ()
-                  assert_equal(1, handler_counter)
-                  handler_counter = handler_counter + 1
+                  assert_equal(1, call_counter)
+                  call_counter = call_counter + 1
                end
 
     local offset = 0
     set_up3 = function ()
-                  assert_equal(2 - offset, handler_counter)
-                  handler_counter = handler_counter + 1
+                  assert_equal(2 - offset, call_counter)
+                  call_counter = call_counter + 1
                end
 
     signal:add_set_up(set_up1)
@@ -484,76 +484,71 @@ function test_after_being_removed_a_set_up_function_wont_be_called_anymore()
     signal:emit()
 
     signal:remove_set_up(set_up2)
-    offset = 1; handler_counter = 0
+    offset = 1; call_counter = 0
     signal:emit()
-end
-
-
-function test_set_up_functions_return_values_are_not_passed_to_the_accumulator()
---TODO
 end
 
 
 function test_tear_down_functions_are_always_called_after_the_handlers()
     handler1 = function ()
-                  assert_equal(0, handler_counter)
-                  handler_counter = handler_counter + 1
+                  assert_equal(0, call_counter)
+                  call_counter = call_counter + 1
                end
 
     handler2 = function ()
-                  assert_equal(1, handler_counter)
-                  handler_counter = handler_counter + 1
+                  assert_equal(1, call_counter)
+                  call_counter = call_counter + 1
                end
 
     tear_down = function ()
-                  assert_equal(2 , handler_counter)
-                  handler_counter = handler_counter + 1
+                  assert_equal(2 , call_counter)
+                  call_counter = call_counter + 1
                 end
 
     signal:connect(handler1)
     signal:connect(handler2)
     signal:add_tear_down(tear_down)
     signal:emit()
-    assert_equal(3, handler_counter)
+    assert_equal(3, call_counter)
 end
 
 
 function test_the_same_tear_down_can_be_added_on_multiple_signals()
-    local tear_down = function () handler_counter = handler_counter + 1 end
+    local tear_down = function () call_counter = call_counter + 1 end
     local signal2 = Signal:new()
 
     signal:add_tear_down(tear_down)
     signal2:add_tear_down(tear_down)
 
-    assert_equal(0, handler_counter)
+    assert_equal(0, call_counter)
     signal:emit()
-    assert_equal(1, handler_counter)
+    assert_equal(1, call_counter)
     signal2:emit()
-    assert_equal(2, handler_counter)
+    assert_equal(2, call_counter)
 end
 
 
 function test_tear_down_functions_are_called_only_once_after_the_handlers()
     handler1 = function ()
-                  assert_equal(0, handler_counter)
-                  handler_counter = handler_counter + 1
+                  assert_equal(0, call_counter)
+                  call_counter = call_counter + 1
                end
 
     handler2 = function ()
-                  assert_equal(1, handler_counter)
-                  handler_counter = handler_counter + 1
+                  assert_equal(1, call_counter)
+                  call_counter = call_counter + 1
                end
 
     tear_down = function ()
-                  assert_equal(2 , handler_counter)
-                  handler_counter = handler_counter + 1
+                  assert_equal(2 , call_counter)
+                  call_counter = call_counter + 1
                 end
 
     signal:connect(handler1)
     signal:connect(handler2)
     signal:add_tear_down(tear_down)
     signal:emit()
-    assert_equal(3, handler_counter)
+    assert_equal(3, call_counter)
 end
 
 
@@ -574,32 +569,151 @@ end
 
 function test_after_being_removed_a_tear_down_function_wont_be_called_anymore()
     tear_down1 = function ()
-                  assert_equal(0, handler_counter)
-                  handler_counter = handler_counter + 1
+                  assert_equal(0, call_counter)
+                  call_counter = call_counter + 1
                end
 
     tear_down2 = function ()
-                  assert_equal(1, handler_counter)
-                  handler_counter = handler_counter + 1
+                  assert_equal(1, call_counter)
+                  call_counter = call_counter + 1
                end
 
     local offset = 0
     tear_down3 = function ()
-                  assert_equal(2 - offset, handler_counter)
-                  handler_counter = handler_counter + 1
+                  assert_equal(2 - offset, call_counter)
+                  call_counter = call_counter + 1
                end
 
     signal:add_tear_down(tear_down1)
     signal:add_tear_down(tear_down2)
     signal:add_tear_down(tear_down3)
     signal:emit()
-    assert_equal(3, handler_counter)
+    assert_equal(3, call_counter)
 
     signal:remove_tear_down(tear_down2)
-    offset = 1; handler_counter = 0
+    offset = 1; call_counter = 0
     signal:emit()
-    assert_equal(2, handler_counter)
+    assert_equal(2, call_counter)
 
+end
+
+
+function test_if_the_same_tear_down_is_added_multiple_times_it_will_be_called_only_once()
+    tear_down = function ()
+                    call_counter = call_counter + 1
+                end
+                  
+    signal:add_tear_down(tear_down)
+    signal:add_tear_down(tear_down)
+    signal:add_tear_down(tear_down)
+    signal:emit()
+    assert_equal(1, call_counter)
+end
+
+
+function test_if_the_same_tear_down_is_added_multiple_times_it_has_to_be_removed_only_once()
+    tear_down = function ()
+                    call_counter = call_counter + 1
+                end
+
+    signal:add_tear_down(tear_down)
+    signal:add_tear_down(tear_down)
+    signal:add_tear_down(tear_down)
+    signal:emit()
+    assert_equal(1, call_counter)
+    signal:remove_tear_down(tear_down)
+    signal:emit()
+    assert_equal(1, call_counter)
+end
+
+
+function test_tear_down_functions_are_called_on_the_order_they_are_inserted()
+    tear_down1 = function ()
+                  assert_equal(0, call_counter)
+                  call_counter = call_counter + 1
+               end
+
+    tear_down2 = function ()
+                  assert_equal(1, call_counter)
+                  call_counter = call_counter + 1
+               end
+
+    tear_down3 = function ()
+                  assert_equal(2, call_counter)
+                  call_counter = call_counter + 1
+               end
+
+    assert_equal(0, call_counter)
+    signal:add_tear_down(tear_down1)
+    signal:add_tear_down(tear_down2)
+    signal:add_tear_down(tear_down3)
+    signal:emit()
+    assert_equal(3, call_counter)
+end
+
+
+function test_after_removing_a_tear_down_function_the_order_of_the_tear_downs_remain_the_same()
+    tear_down1 = function ()
+                  assert_equal(0, call_counter)
+                  call_counter = call_counter + 1
+               end
+
+    tear_down2 = function ()
+                  assert_equal(1, call_counter)
+                  call_counter = call_counter + 1
+               end
+
+    local offset = 0
+    tear_down3 = function ()
+                  assert_equal(2 - offset, call_counter)
+                  call_counter = call_counter + 1
+               end
+
+    assert_equal(0, call_counter)
+    signal:add_tear_down(tear_down1)
+    signal:add_tear_down(tear_down2)
+    signal:add_tear_down(tear_down3)
+    signal:emit()
+    assert_equal(3, call_counter)
+
+    signal:remove_tear_down(tear_down2)
+    offset = 1; call_counter = 0
+    signal:emit()
+    assert_equal(2, call_counter)
+end
+
+
+function test_if_you_remove_a_tear_down_that_does_not_exist_nothing_happens()
+    tear_down  = function ()
+                  assert_equal(0, call_counter)
+               end
+
+    signal:remove_tear_down(tear_down)
+end
+
+
+function test_the_return_value_of_each_handler_is_passed_to_the_accumulator()
+--TODO
+end
+
+
+function test_after_the_execution_of_each_handler_the_accumulator_is_called()
+--TODO
+end
+
+
+function test_even_when_the_handler_returns_nil_it_is_repassed_to_the_accumulator()
+--TODO
+end
+
+
+function test_the_handlers_can_return_multiple_values_to_the_accumulator()
+--TODO
+end
+
+
+function test_set_up_functions_return_values_are_not_passed_to_the_accumulator()
+--TODO
 end
 
 
@@ -608,97 +722,44 @@ function test_tear_down_functions_return_values_are_not_passed_to_the_accumulato
 end
 
 
-function test_if_the_same_tear_down_is_added_multiple_times_it_will_be_called_only_once()
-    tear_down = function ()
-                    handler_counter = handler_counter + 1
-                end
-                  
-    signal:add_tear_down(tear_down)
-    signal:add_tear_down(tear_down)
-    signal:add_tear_down(tear_down)
-    signal:emit()
-    assert_equal(1, handler_counter)
+function test_if_a_signal_is_stopped_no_more_handlers_are_called()
+--TODO
 end
 
 
-function test_if_the_same_tear_down_is_added_multiple_times_it_has_to_be_removed_only_once()
-    tear_down = function ()
-                    handler_counter = handler_counter + 1
-                end
-
-    signal:add_tear_down(tear_down)
-    signal:add_tear_down(tear_down)
-    signal:add_tear_down(tear_down)
-    signal:emit()
-    assert_equal(1, handler_counter)
-    signal:remove_tear_down(tear_down)
-    signal:emit()
-    assert_equal(1, handler_counter)
+function test_the_signal_emission_can_be_stopped_inside_a_handler()
+--TODO
 end
 
 
-function test_tear_down_functions_are_called_on_the_order_they_are_inserted()
-    tear_down1 = function ()
-                  assert_equal(0, handler_counter)
-                  handler_counter = handler_counter + 1
-               end
-
-    tear_down2 = function ()
-                  assert_equal(1, handler_counter)
-                  handler_counter = handler_counter + 1
-               end
-
-    tear_down3 = function ()
-                  assert_equal(2, handler_counter)
-                  handler_counter = handler_counter + 1
-               end
-
-    assert_equal(0, handler_counter)
-    signal:add_tear_down(tear_down1)
-    signal:add_tear_down(tear_down2)
-    signal:add_tear_down(tear_down3)
-    signal:emit()
-    assert_equal(3, handler_counter)
+function test_the_signal_emission_can_be_stopped_inside_a_set_up()
+--TODO
 end
 
 
-function test_after_removing_a_tear_down_function_the_order_of_the_tear_downs_remain_the_same()
-    tear_down1 = function ()
-                  assert_equal(0, handler_counter)
-                  handler_counter = handler_counter + 1
-               end
-
-    tear_down2 = function ()
-                  assert_equal(1, handler_counter)
-                  handler_counter = handler_counter + 1
-               end
-
-    local offset = 0
-    tear_down3 = function ()
-                  assert_equal(2 - offset, handler_counter)
-                  handler_counter = handler_counter + 1
-               end
-
-    assert_equal(0, handler_counter)
-    signal:add_tear_down(tear_down1)
-    signal:add_tear_down(tear_down2)
-    signal:add_tear_down(tear_down3)
-    signal:emit()
-    assert_equal(3, handler_counter)
-
-    signal:remove_tear_down(tear_down2)
-    offset = 1; handler_counter = 0
-    signal:emit()
-    assert_equal(2, handler_counter)
+function test_the_signal_emission_can_be_stopped_inside_a_tear_down()
+--TODO
 end
 
 
-function test_if_you_remove_a_tear_down_that_does_not_exist_nothing_happens()
-    tear_down  = function ()
-                  assert_equal(0, handler_counter)
-               end
-
-    signal:remove_tear_down(tear_down)
+function test_the_signal_emission_can_be_stopped_inside_a_accumulator()
+--TODO
 end
+
+
+function test_the_signal_emission_can_be_stopped_inside_a_coroutine()
+--TODO
+end
+
+
+function test_stopping_a_signal_will_not_stop_the_set_up_functions()
+--TODO
+end
+
+
+function test_stopping_a_signal_will_not_stop_the_tear_down_functions()
+--TODO
+end
+
 
 lunit.main()
