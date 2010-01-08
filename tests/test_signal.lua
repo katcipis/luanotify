@@ -85,7 +85,6 @@ function test_handlers_receive_all_the_data_that_is_passed_on_emission()
 
     signal:connect(handler)
     signal:emit("pineapple")
-
 end
 
 
@@ -380,7 +379,6 @@ function test_set_up_functions_are_called_on_the_order_they_are_inserted()
     signal:add_set_up(set_up1)
     signal:add_set_up(set_up2)
     signal:emit()
-
 end
 
 
@@ -722,22 +720,50 @@ end
 
 
 function test_if_a_signal_is_stopped_no_more_handlers_are_called()
---TODO
+--TODO ???? stop() only do sense after emit() call 
 end
 
 
 function test_the_signal_emission_can_be_stopped_inside_a_handler()
---TODO
+    local handler1 = function ()
+                         assert_equal(0, call_counter)
+                         call_counter = call_counter + 1
+                         signal:stop()
+                     end
+
+    local handler2 = function ()
+                         assert_equal(1, call_counter)
+                         call_counter = call_counter + 1
+                     end
+
+    signal:connect(handler1)
+    signal:connect(handler2)
+    signal:emit()
+    assert_equal(1, call_counter)
 end
 
 
 function test_the_signal_emission_can_be_stopped_inside_a_set_up()
---TODO
+    local set_up = function ()
+                       assert_equal(0, call_counter)
+                       call_counter = call_counter + 1
+                       signal:stop()
+                   end
+
+    local handler = function ()
+                        assert_equal(1, call_counter)
+                        call_counter = call_counter + 1
+                    end
+
+    signal:add_set_up(set_up)
+    signal:connect(handler)
+    signal:emit()
+    assert_equal(1, call_counter)
 end
 
 
 function test_the_signal_emission_can_be_stopped_inside_a_tear_down()
---TODO
+--TODO ????? the handler functions already calleds
 end
 
 
@@ -752,12 +778,52 @@ end
 
 
 function test_stopping_a_signal_will_not_stop_the_set_up_functions()
---TODO
+    local set_up1 = function ()
+                        assert_equal(0, call_counter)
+                        call_counter = call_counter + 1
+                        signal:stop()
+                    end
+
+    local set_up2 = function ()
+                        assert_equal(1, call_counter)
+                        call_counter = call_counter + 1
+                    end
+
+    local handler = function ()
+                        assert_equal(2, call_counter)
+                        call_counter = call_counter + 1
+                    end
+
+    signal:add_set_up(set_up1)
+    signal:add_set_up(set_up2)
+    signal:connect(handler)
+    signal:emit()
+    assert_equal(2, call_counter)
 end
 
 
 function test_stopping_a_signal_will_not_stop_the_tear_down_functions()
---TODO
+    local tear_down = function ()
+                          assert_equal(1, call_counter)
+                          call_counter = call_counter + 1
+                      end
+
+    local handler1 = function ()
+                         assert_equal(0, call_counter)
+                         call_counter = call_counter + 1
+                         signal:stop()
+                     end
+
+    local handler2 = function ()
+                         assert_equal(1, call_counter)
+                         call_counter = call_counter + 1
+                     end
+
+    signal:add_tear_down(tear_down)
+    signal:connect(handler1)
+    signal:connect(handler2)
+    signal:emit()
+    assert_equal(2, call_counter)
 end
 
 

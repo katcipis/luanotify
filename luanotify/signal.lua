@@ -56,6 +56,7 @@ function Signal:new (object)
     object.handlers = {}
     object.set_up_funcs  = {}
     object.tear_down_funcs = {}
+    object.signal_stopped = false
     return object
 end
 
@@ -93,9 +94,12 @@ end
 
 
 function Signal:emit(...)
+    self.signal_stopped = false;
+
     for _, set_up in ipairs(self.set_up_funcs) do set_up() end
 
     for _, handler_table in ipairs(self.handlers) do 
+        if(self.signal_stopped) then break end
         if(handler_table.block == 0) then
             handler_table.handler(...)
         end
@@ -137,5 +141,6 @@ end
 
 
 function Signal:stop()
-
+    self.signal_stopped = true
 end
+
