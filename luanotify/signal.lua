@@ -110,7 +110,24 @@ end
 
 
 function Signal:emit_with_accumulator(accumulator, ...)
+    if (not accumulator) then
+        self:emit(...)
+        return
+    end
 
+    self.signal_stopped = false;
+
+    for _, set_up in ipairs(self.set_up_funcs) do set_up() end
+
+    for _, handler_table in ipairs(self.handlers) do 
+        if(self.signal_stopped) then break end
+        if(handler_table.block == 0) then
+            ret = { handler_table.handler(...) }
+            accumulator(unpack(ret))
+        end
+    end
+
+    for _, tear_down in ipairs(self.tear_down_funcs) do tear_down() end
 end
 
 

@@ -690,32 +690,117 @@ end
 
 
 function test_the_return_value_of_each_handler_is_passed_to_the_accumulator()
---TODO
+    local handler1 = function ()
+                         assert_equal(0, call_counter)
+                         call_counter = call_counter + 1
+                         return call_counter
+                     end
+
+    local handler2 = function ()
+                         assert_equal(1, call_counter)
+                         call_counter = call_counter + 1
+                         return call_counter
+                     end
+
+    local counter = 0
+
+    local accumulator = function (arg1)
+                            counter = counter + arg1
+                        end
+
+    signal:connect(handler1)
+    signal:connect(handler2)
+    signal:emit_with_accumulator(accumulator)
+    assert_equal(2, call_counter)
+    assert_equal(3, counter)
 end
 
 
 function test_after_the_execution_of_each_handler_the_accumulator_is_called()
---TODO
+    local handler1 = function ()
+                         call_counter = call_counter + 1
+                     end
+
+    local handler2 = function ()
+                         call_counter = call_counter + 1
+                     end
+
+    local counter = 0
+
+    local accumulator = function ()
+                            counter = counter + 1
+                            assert_equal(call_counter, counter)
+                        end
+
+    signal:connect(handler1)
+    signal:connect(handler2)
+    signal:emit_with_accumulator(accumulator)
 end
 
 
 function test_even_when_the_handler_returns_nil_it_is_repassed_to_the_accumulator()
---TODO
+    local handler = function ()
+                    end
+
+    local accumulator = function (arg)
+                            assert_equal(arg, nil)
+                        end
+
+    signal:connect(handler)
+    signal:emit_with_accumulator(accumulator)
 end
 
 
 function test_the_handlers_can_return_multiple_values_to_the_accumulator()
---TODO
+    local handler = function ()
+                        return 1, 2
+                    end
+
+    local accumulator = function (arg1, arg2)
+                            assert_equal(arg1, 1)
+                            assert_equal(arg2, 2)
+                        end
+
+    signal:connect(handler)
+    signal:emit_with_accumulator(accumulator)
 end
 
 
 function test_set_up_functions_return_values_are_not_passed_to_the_accumulator()
---TODO
+    local set_up = function ()
+                       return 1
+                   end
+
+    local handler = function ()
+                       return 2
+                    end
+
+    local accumulator = function (arg)
+                            assert_equal(arg, 2)
+                        end
+
+    signal:add_set_up(set_up)
+    signal:connect(handler)
+    signal:emit_with_accumulator(accumulator)
 end
 
 
 function test_tear_down_functions_return_values_are_not_passed_to_the_accumulator()
---TODO
+    local tear_down = function ()
+                          return 1
+                      end
+
+    local handler = function ()
+                       return 2
+                    end
+
+    local accumulator = function (arg)
+                            assert_equal(arg, 2)
+                        end
+
+    signal:add_tear_down(tear_down)
+    signal:connect(handler)
+    signal:emit_with_accumulator(accumulator)
 end
 
 
@@ -768,12 +853,29 @@ end
 
 
 function test_the_signal_emission_can_be_stopped_inside_a_accumulator()
---TODO
+    local handler1 = function ()
+                        assert_equal(0, call_counter)
+                        call_counter = call_counter + 1
+                     end
+
+    local handler2 = function ()
+                        assert_equal(1, call_counter)
+                        call_counter = call_counter + 1
+                     end
+
+    local accumulator = function ()
+                            signal:stop()
+                        end
+
+    signal:connect(handler1)
+    signal:connect(handler2)
+    signal:emit_with_accumulator(accumulator)
+    assert_equal(1, call_counter)
 end
 
 
 function test_the_signal_emission_can_be_stopped_inside_a_coroutine()
---TODO
+--TODO ????
 end
 
 
