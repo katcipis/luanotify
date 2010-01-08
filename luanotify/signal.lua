@@ -61,7 +61,7 @@ end
 
 
 function Signal:disconnect(handler_function)
-    local pos, handler_table = get_handler_table(self.handlers, handler_function)
+    local pos, _ = get_handler_table(self.handlers, handler_function)
     if(pos) then table.remove(self.handlers, pos) end
 end
 
@@ -69,7 +69,7 @@ end
 function Signal:connect(handler_function)
     if(not get_handler_table(self.handlers, handler_function)) then
         table.insert(self.handlers, { handler = handler_function,
-                                       block   = 0 })
+                                      block   = 0 })
     end
 end
 
@@ -93,15 +93,15 @@ end
 
 
 function Signal:emit(...)
-    for _,set_up in ipairs(self.set_up_funcs) do set_up() end
+    for _, set_up in ipairs(self.set_up_funcs) do set_up() end
 
-    for _,handler_table in ipairs(self.handlers) do 
+    for _, handler_table in ipairs(self.handlers) do 
         if(handler_table.block == 0) then
             handler_table.handler(...)
         end
     end
 
-    for _,tear_down in ipairs(self.tear_down_funcs) do tear_down() end
+    for _, tear_down in ipairs(self.tear_down_funcs) do tear_down() end
 end
 
 
