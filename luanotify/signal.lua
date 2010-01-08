@@ -26,27 +26,30 @@ Signal = {} --Class attributes and methods goes on this table.
 -- private functions
 
 local function get_handler_table(handlers, handler_function)
-          for pos, handler_table in ipairs(handlers) do
-              if(handler_table.handler == handler_function) then
-                  return pos, handler_table
-              end
-          end
-      end
+    for pos, handler_table in ipairs(handlers) do
+        if(handler_table.handler == handler_function) then
+            return pos, handler_table
+        end
+    end
+end
 
 local function get_function_position(func_table, target_func)
-          for pos, func in ipairs(func_table) do
-              if(func == target_func) then
-                  return pos
-              end
-          end
-      end
+    for pos, func in ipairs(func_table) do
+        if(func == target_func) then
+            return pos
+        end
+    end
+end
 
 
 -- Class definition and methods
 
 function Signal:new (object)
-    object = object or {}      --create table if user does no provide one.
-    setmetatable(object, self) -- self is the Signal table. Set the metatable of the new object as the Signal table (inherits Signal).
+    -- create table if user does no provide one.
+    object = object or {}      
+    -- self is the Signal table. 
+    -- set the metatable of the new object as the Signal table (inherits Signal).
+    setmetatable(object, self)
     self.__index = self
 
     -- create all the instance state data.
