@@ -49,29 +49,29 @@ function Signal:new (object)
     self.__index = self
 
     -- create all the instance state data.
-    object._handlers = {}
-    object._set_up_funcs  = {}
-    object._tear_down_funcs = {}
+    object.handlers = {}
+    object.set_up_funcs  = {}
+    object.tear_down_funcs = {}
     return object
 end
 
 
 function Signal:disconnect(handler_function)
-    local pos, handler_table = get_handler_table(self._handlers, handler_function)
-    if(pos) then table.remove(self._handlers, pos) end
+    local pos, handler_table = get_handler_table(self.handlers, handler_function)
+    if(pos) then table.remove(self.handlers, pos) end
 end
 
 
 function Signal:connect(handler_function)
-    if(not get_handler_table(self._handlers, handler_function)) then
-        table.insert(self._handlers, { handler = handler_function,
+    if(not get_handler_table(self.handlers, handler_function)) then
+        table.insert(self.handlers, { handler = handler_function,
                                        block   = 0 })
     end
 end
 
 
 function Signal:block(handler_function)
-    local _, handler_table = get_handler_table(self._handlers, handler_function)
+    local _, handler_table = get_handler_table(self.handlers, handler_function)
     if(handler_table) then
         handler_table.block = handler_table.block + 1
     end
@@ -79,7 +79,7 @@ end
 
 
 function Signal:unblock(handler_function)
-    local _, handler_table = get_handler_table(self._handlers, handler_function)
+    local _, handler_table = get_handler_table(self.handlers, handler_function)
     if(handler_table) then
         if(handler_table.block > 0) then
             handler_table.block = handler_table.block - 1
@@ -89,15 +89,15 @@ end
 
 
 function Signal:emit(...)
-    for _,set_up in ipairs(self._set_up_funcs) do set_up() end
+    for _,set_up in ipairs(self.set_up_funcs) do set_up() end
 
-    for _,handler_table in ipairs(self._handlers) do 
+    for _,handler_table in ipairs(self.handlers) do 
         if(handler_table.block == 0) then
             handler_table.handler(...)
         end
     end
 
-    for _,tear_down in ipairs(self._tear_down_funcs) do tear_down() end
+    for _,tear_down in ipairs(self.tear_down_funcs) do tear_down() end
 end
 
 
@@ -107,28 +107,28 @@ end
 
 
 function Signal:add_set_up(set_up_func)
-    if(not get_function_position(self._set_up_funcs, set_up_func)) then
-        table.insert(self._set_up_funcs, set_up_func)
+    if(not get_function_position(self.set_up_funcs, set_up_func)) then
+        table.insert(self.set_up_funcs, set_up_func)
     end
 end
 
 
 function Signal:remove_set_up(set_up_func)
-    local pos = get_function_position(self._set_up_funcs, set_up_func)
-    if(pos) then table.remove(self._set_up_funcs, pos) end
+    local pos = get_function_position(self.set_up_funcs, set_up_func)
+    if(pos) then table.remove(self.set_up_funcs, pos) end
 end
 
 
 function Signal:add_tear_down(tear_down_func)
-    if(not get_function_position(self._tear_down_funcs, tear_down_func)) then
-        table.insert(self._tear_down_funcs, tear_down_func)
+    if(not get_function_position(self.tear_down_funcs, tear_down_func)) then
+        table.insert(self.tear_down_funcs, tear_down_func)
     end
 end
 
 
 function Signal:remove_tear_down(tear_down_func)
-    local pos = get_function_position(self._tear_down_funcs, tear_down_func)
-    if(pos) then table.remove(self._tear_down_funcs, pos) end
+    local pos = get_function_position(self.tear_down_funcs, tear_down_func)
+    if(pos) then table.remove(self.tear_down_funcs, pos) end
 end
 
 

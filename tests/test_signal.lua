@@ -22,9 +22,9 @@
 
 
 require "lunit"
-require "luanotify.Signal"
+require "luanotify.signal"
 
-module("Signal_testcase", lunit.testcase, package.seeall)
+module("signal_testcase", lunit.testcase, package.seeall)
 
 function setUp()
     signal = Signal:new()
