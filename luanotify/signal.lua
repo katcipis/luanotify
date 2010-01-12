@@ -69,7 +69,7 @@ end
 
 function Signal:connect(handler_function)
     if (type(handler_function) ~= "function") then
-		return
+        error("connect: expected a function, got a "..type(handler_function));
     end
 
     if(not get_handler_table(self.handlers, handler_function)) then
@@ -135,7 +135,7 @@ end
 
 function Signal:add_set_up(set_up_func)
     if (type(set_up_func) ~= "function") then
-        return
+        error("add_set_up: expected a function, got a "..type(set_up_func));
     end
 
     if(not get_function_position(self.set_up_funcs, set_up_func)) then
@@ -152,7 +152,7 @@ end
 
 function Signal:add_tear_down(tear_down_func)
     if (type(tear_down_func) ~= "function") then
-        return
+        error("add_tear_down: expected a function, got a "..type(tear_down_func));
     end
 
     if(not get_function_position(self.tear_down_funcs, tear_down_func)) then
