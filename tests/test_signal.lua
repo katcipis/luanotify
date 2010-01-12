@@ -689,6 +689,18 @@ function test_if_you_remove_a_tear_down_that_does_not_exist_nothing_happens()
 end
 
 
+function test_if_the_accumulator_is_not_function_the_handlers_are_not_called()
+    local handler = function ()
+                        assert_equal(0, call_counter)
+                        call_counter = call_counter + 1
+                        return call_counter
+                    end
+
+    signal:connect(handler)
+    signal:emit_with_accumulator()
+    assert_equal(0, call_counter)
+end
+
 function test_the_return_value_of_each_handler_is_passed_to_the_accumulator()
     local handler1 = function ()
                          assert_equal(0, call_counter)

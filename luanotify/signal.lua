@@ -110,8 +110,7 @@ end
 
 
 function Signal:emit_with_accumulator(accumulator, ...)
-    if (not accumulator) then
-        self:emit(...)
+    if (type(accumulator) ~= "function") then
         return
     end
 
