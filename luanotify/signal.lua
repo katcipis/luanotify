@@ -121,8 +121,7 @@ function Signal:emit_with_accumulator(accumulator, ...)
     for _, handler_table in ipairs(self.handlers) do 
         if(self.signal_stopped) then break end
         if(handler_table.block == 0) then
-            ret = { handler_table.handler(...) }
-            accumulator(unpack(ret))
+            accumulator(handler_table.handler(...))
         end
     end
 

@@ -816,8 +816,30 @@ function test_tear_down_functions_return_values_are_not_passed_to_the_accumulato
 end
 
 
-function test_if_a_signal_is_stopped_no_more_handlers_are_called()
---TODO ???? stop() only do sense after emit() call 
+function test_if_a_signal_is_stopped_no_more_handlers_are_called_on_that_emission()
+    
+    local handler1 = function ()
+                         assert_equal(0, call_counter)
+                         call_counter = call_counter + 1
+                     end
+
+    local handler2 = function ()
+                         assert_equal(1, call_counter)
+                         call_counter = call_counter + 1
+                         signal:stop()
+                     end
+
+    local handler3 = function ()
+                         call_counter = call_counter + 1
+                     end
+
+    signal:connect(handler1)
+    signal:connect(handler2)
+    signal:connect(handler3)
+
+    assert_equal(0, call_counter)
+    signal:emit()
+    assert_equal(2, call_counter) 
 end
 
 
@@ -859,11 +881,6 @@ function test_the_signal_emission_can_be_stopped_inside_a_set_up()
 end
 
 
-function test_the_signal_emission_can_be_stopped_inside_a_tear_down()
---TODO ????? the handler functions already calleds
-end
-
-
 function test_the_signal_emission_can_be_stopped_inside_a_accumulator()
     local handler1 = function ()
                         assert_equal(0, call_counter)
@@ -883,11 +900,6 @@ function test_the_signal_emission_can_be_stopped_inside_a_accumulator()
     signal:connect(handler2)
     signal:emit_with_accumulator(accumulator)
     assert_equal(1, call_counter)
-end
-
-
-function test_the_signal_emission_can_be_stopped_inside_a_coroutine()
---TODO ????
 end
 
 
