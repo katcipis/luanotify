@@ -68,6 +68,10 @@ end
 
 
 function Signal:connect(handler_function)
+    if (type(handler_function) ~= "function") then
+		return
+    end
+
     if(not get_handler_table(self.handlers, handler_function)) then
         table.insert(self.handlers, { handler = handler_function,
                                       block   = 0 })
@@ -130,6 +134,10 @@ end
 
 
 function Signal:add_set_up(set_up_func)
+    if (type(set_up_func) ~= "function") then
+        return
+    end
+
     if(not get_function_position(self.set_up_funcs, set_up_func)) then
         table.insert(self.set_up_funcs, set_up_func)
     end
@@ -143,6 +151,10 @@ end
 
 
 function Signal:add_tear_down(tear_down_func)
+    if (type(tear_down_func) ~= "function") then
+        return
+    end
+
     if(not get_function_position(self.tear_down_funcs, tear_down_func)) then
         table.insert(self.tear_down_funcs, tear_down_func)
     end

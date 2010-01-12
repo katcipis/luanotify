@@ -48,6 +48,15 @@ function test_if_a_handler_function_is_connected_it_will_always_be_called_when_a
 end
 
 
+function test_no_error_is_generated_if_you_connect_a_handler_that_is_not_a_function()
+    local handler = "not a function"
+    local accum = function () end
+    signal:connect(handler)
+    signal:emit()
+    signal:emit_with_accumulator(accum)
+end
+
+
 function test_if_there_is_no_handler_connected_emission_does_nothing()
     assert_equal(0, call_counter)
     signal:emit()
@@ -293,6 +302,15 @@ function test_a_handler_must_be_unblocked_the_same_times_it_has_been_blocked()
 end
 
 
+function test_no_error_is_generated_if_you_add_a_set_up_that_is_not_a_function()
+    local set_up = "not a function"
+    local accum = function () end
+    signal:add_set_up(set_up)
+    signal:emit()
+    signal:emit_with_accumulator(accum)
+end
+
+
 function test_set_up_functions_are_always_called_before_the_handlers()
     handler1 = function ()
                   assert_equal(0, call_counter)
@@ -483,6 +501,15 @@ function test_after_being_removed_a_set_up_function_wont_be_called_anymore()
     signal:remove_set_up(set_up2)
     offset = 1; call_counter = 0
     signal:emit()
+end
+
+
+function test_no_error_is_generated_if_you_add_a_tear_down_that_is_not_a_function()
+    local tear_down = "not a function"
+    local accum = function () end
+    signal:add_tear_down(tear_down)
+    signal:emit()
+    signal:emit_with_accumulator(accum)
 end
 
 
