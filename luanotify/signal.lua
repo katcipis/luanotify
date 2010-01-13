@@ -1,5 +1,6 @@
 ---------------------------------------------------------------------------------
--- Copyright (C) 2010 Digitro Corporation <www.digitro.com.br>
+-- Copyright (C) 2010 Tiago Katcipis <tiagokatcipis@gmail.com>
+-- Copyright (C) 2010 Paulo Pizarro  <paulo.pizarro@gmail.com>
 -- 
 -- @author Paulo Pizarro  <paulo.pizarro@gmail.com>
 -- @author Tiago Katcipis <tiagokatcipis@gmail.com>
