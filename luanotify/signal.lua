@@ -55,8 +55,8 @@ function Signal:new (object)
 
     -- create all the instance state data.
     object.handlers = {}
-    object.set_up_funcs  = {}
-    object.tear_down_funcs = {}
+    object.pre_emit_funcs  = {}
+    object.post_emit_funcs = {}
     object.signal_stopped = false
     return object
 end
@@ -101,7 +101,7 @@ end
 function Signal:emit(...)
     self.signal_stopped = false;
 
-    for _, set_up in ipairs(self.set_up_funcs) do set_up() end
+    for _, set_up in ipairs(self.pre_emit_funcs) do set_up() end
 
     for _, handler_table in ipairs(self.handlers) do 
         if(self.signal_stopped) then break end
@@ -110,7 +110,7 @@ function Signal:emit(...)
         end
     end
 
-    for _, tear_down in ipairs(self.tear_down_funcs) do tear_down() end
+    for _, tear_down in ipairs(self.post_emit_funcs) do tear_down() end
 end
 
 
@@ -121,7 +121,7 @@ function Signal:emit_with_accumulator(accumulator, ...)
 
     self.signal_stopped = false;
 
-    for _, set_up in ipairs(self.set_up_funcs) do set_up() end
+    for _, set_up in ipairs(self.pre_emit_funcs) do set_up() end
 
     for _, handler_table in ipairs(self.handlers) do 
         if(self.signal_stopped) then break end
@@ -130,41 +130,41 @@ function Signal:emit_with_accumulator(accumulator, ...)
         end
     end
 
-    for _, tear_down in ipairs(self.tear_down_funcs) do tear_down() end
+    for _, tear_down in ipairs(self.post_emit_funcs) do tear_down() end
 end
 
 
-function Signal:add_set_up(set_up_func)
-    if (type(set_up_func) ~= "function") then
-        error("add_set_up: expected a function, got a "..type(set_up_func));
+function Signal:add_pre_emit(pre_emit_func)
+    if (type(pre_emit_func) ~= "function") then
+        error("add_pre_emit: expected a function, got a "..type(pre_emit_func));
     end
 
-    if(not get_function_position(self.set_up_funcs, set_up_func)) then
-        table.insert(self.set_up_funcs, set_up_func)
-    end
-end
-
-
-function Signal:remove_set_up(set_up_func)
-    local pos = get_function_position(self.set_up_funcs, set_up_func)
-    if(pos) then table.remove(self.set_up_funcs, pos) end
-end
-
-
-function Signal:add_tear_down(tear_down_func)
-    if (type(tear_down_func) ~= "function") then
-        error("add_tear_down: expected a function, got a "..type(tear_down_func));
-    end
-
-    if(not get_function_position(self.tear_down_funcs, tear_down_func)) then
-        table.insert(self.tear_down_funcs, tear_down_func)
+    if(not get_function_position(self.pre_emit_funcs, pre_emit_func)) then
+        table.insert(self.pre_emit_funcs, pre_emit_func)
     end
 end
 
 
-function Signal:remove_tear_down(tear_down_func)
-    local pos = get_function_position(self.tear_down_funcs, tear_down_func)
-    if(pos) then table.remove(self.tear_down_funcs, pos) end
+function Signal:remove_pre_emit(pre_emit_func)
+    local pos = get_function_position(self.pre_emit_funcs, pre_emit_func)
+    if(pos) then table.remove(self.pre_emit_funcs, pos) end
+end
+
+
+function Signal:add_post_emit(post_emit_func)
+    if (type(post_emit_func) ~= "function") then
+        error("add_post_emit: expected a function, got a "..type(post_emit_func));
+    end
+
+    if(not get_function_position(self.post_emit_funcs, post_emit_func)) then
+        table.insert(self.post_emit_funcs, post_emit_func)
+    end
+end
+
+
+function Signal:remove_post_emit(post_emit_func)
+    local pos = get_function_position(self.post_emit_funcs, post_emit_func)
+    if(pos) then table.remove(self.post_emit_funcs, pos) end
 end
 
 
