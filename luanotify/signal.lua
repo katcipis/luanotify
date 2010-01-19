@@ -29,7 +29,7 @@ Signal = {} --Class attributes and methods goes on this table.
 
 function Signal:new (object)
     -- create table if user does no provide one.
-    object = object or {}      
+    local object = object or {}      
     -- self is the Signal table. 
     -- set the metatable of the new object as the Signal table (inherits Signal).
     setmetatable(object, self)
