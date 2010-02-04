@@ -20,11 +20,21 @@
 -- You should have received a copy of the GNU Lesser General Public License
 -- along with Luasofia.  If not, see <http://www.gnu.org/licenses/>.
 ---------------------------------------------------------------------------------
+module(..., package.seeall)
 
+-----------------------------------------------------
+-- Class attributes and methods goes on this table --
+-----------------------------------------------------
+local Signal = {} 
 
-Signal = {} --Class attributes and methods goes on this table.
+------------------------------------
+-- Metamethods goes on this table --
+------------------------------------
+local Signal_mt = { __index = Signal, __metatable = "protected" }
 
--- private functions
+-----------------------
+-- private functions --
+-----------------------
 
 local function get_handler_table(handlers, handler_function)
     for pos, handler_table in ipairs(handlers) do
@@ -42,16 +52,14 @@ local function get_function_position(func_table, target_func)
     end
 end
 
+--------------------------
+-- Constructor function --
+--------------------------
 
--- Class definition and methods
-
-function Signal:new (object)
-    -- create table if user does no provide one.
-    local object = object or {}      
-    -- self is the Signal table. 
-    -- set the metatable of the new object as the Signal table (inherits Signal).
-    setmetatable(object, self)
-    self.__index = self
+function new ()
+    local object = {}      
+    -- set the metatable of the new object as the Signal_mt table (inherits Signal).
+    setmetatable(object, Signal_mt)
 
     -- create all the instance state data.
     object.handlers = {}
@@ -61,6 +69,10 @@ function Signal:new (object)
     return object
 end
 
+
+----------------------------------
+-- Class definition and methods --
+----------------------------------
 
 function Signal:disconnect(handler_function)
     local pos, _ = get_handler_table(self.handlers, handler_function)
