@@ -43,6 +43,9 @@ function new ()
     setmetatable(object, OrderedSet_mt)
 
     -- create all the instance state data.
+    object.data = {}
+    object.first = 1 
+    object.last  = 0
     return object
 end
 
@@ -51,13 +54,30 @@ end
 -- Class definition and methods --
 ----------------------------------
 
+function OrderedSet:is_empty()
+    return self.first > self.last
+end
+
 function OrderedSet:push_front(data)
 end
 
 function OrderedSet:push_back(data)
+    self.last = self.last + 1
+    self.data[self.last] = data
 end
 
 function OrderedSet:get_iterator()
+    local first = self.first
+    local function iterator()
+        while(first <= self.last) do
+            local data = self.data[first]
+            first = first + 1
+            if(data) then
+                return data
+            end
+        end    
+    end 
+    return iterator
 end
 
 function OrderedSet:remove(data)
