@@ -16,8 +16,6 @@
 -- LuaNotify is distributed in the hope that it will be useful,
 -- but WITHOUT ANY WARRANTY; without even the implied warranty of
 -- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
--- GNU Lesser General Public License for more details.
-
 -- You should have received a copy of the GNU Lesser General Public License
 -- along with Luasofia.  If not, see <http://www.gnu.org/licenses/>.
 ---------------------------------------------------------------------------------
@@ -41,6 +39,7 @@ function test_data_pushed_on_the_back_will_be_the_last_to_access_on_iteration()
     ordered_set:push_back(3)
 
     local counter = 1
+    assert_false(ordered_set:is_empty())
 
     for data in ordered_set:get_iterator() do
         assert_equal(counter, data)
@@ -49,9 +48,46 @@ function test_data_pushed_on_the_back_will_be_the_last_to_access_on_iteration()
 end
 
 function test_knows_if_it_is_empty()
+    assert_true(ordered_set:is_empty())
+end
+
+function test_knows_if_it_is_not_empty()
+    ordered_set:push_back(1)
+    assert_false(ordered_set:is_empty())
+end
+
+function test_iteration_wont_change_the_order_of_the_data()
+    ordered_set:push_back(1)
+    ordered_set:push_back(2)
+    ordered_set:push_back(3)
+
+    local counter = 1
+    for data in ordered_set:get_iterator() do
+        assert_equal(counter, data)
+        counter = counter + 1
+    end
+
+    counter = 1
+    for data in ordered_set:get_iterator() do
+        assert_equal(counter, data)
+        counter = counter + 1
+    end
+
 end
 
 function test_data_pushed_on_the_front_will_be_the_first_to_access_on_iteration()
+    ordered_set:push_front(1)
+    ordered_set:push_front(2)
+    ordered_set:push_front(3)
+
+    local counter = 3
+    assert_false(ordered_set:is_empty())
+
+    for data in ordered_set:get_iterator() do
+        assert_equal(counter, data)
+        counter = counter - 1
+    end
+
 end
 
 function test_after_removing_data_the_data_will_no_longer_exist_on_the_set()
@@ -60,10 +96,13 @@ end
 function test_after_removing_data_from_the_middle_the_previous_order_remains_the_same()
 end
 
-function test_after_removing_data_from_front_the_previous_order_remains_the_same()
+function test_after_removing_data_from_the_front_the_previous_order_remains_the_same()
 end
 
 function test_after_removing_data_from_the_back_the_previous_order_remains_the_same()
+end
+
+function test_after_removing_all_data_it_gets_empty()
 end
 
 function test_if_some_data_is_pushed_twice_it_will_be_pushed_only_once()
@@ -73,6 +112,9 @@ function test_if_some_data_is_pushed_twice_the_position_of_the_first_push_remain
 end
 
 function test_iteration_occurs_according_to_the_order_elements_where_inserted()
+end
+
+function test_all_data_pushed_is_acessed_on_iteration()
 end
 
 lunit.main()

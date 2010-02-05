@@ -59,6 +59,8 @@ function OrderedSet:is_empty()
 end
 
 function OrderedSet:push_front(data)
+    self.first = self.first - 1
+    self.data[self.first] = data
 end
 
 function OrderedSet:push_back(data)
