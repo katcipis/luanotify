@@ -53,22 +53,36 @@ end
 ---------------------------
 -- Class private methods --
 ---------------------------
+local function refresh_first(self)
+    while(self.first <= self.last) do
+        if(self.data[self.first]) then
+            return true
+        end
+        self.first = self.first + 1
+    end
+end
+
 
 --------------------------
 -- Class public methods --
 --------------------------
-
 function OrderedSet:is_empty()
     return self.first > self.last
 end
 
 function OrderedSet:push_front(data)
+    if(self.data_position[data]) then
+        return
+    end
     self.first = self.first - 1
     self.data[self.first]    = data
     self.data_position[data] = self.first
 end
 
 function OrderedSet:push_back(data)
+    if(self.data_position[data]) then
+        return
+    end
     self.last = self.last + 1
     self.data[self.last]     = data
     self.data_position[data] = self.last
@@ -89,9 +103,11 @@ function OrderedSet:get_iterator()
 end
 
 function OrderedSet:remove(data)
-    if(self.data_position[data]) then
-        self.data[self.data_position[data]] = nil
-        self.data_position[data]            = nil
+    if(not self.data_position[data]) then
+        return 
     end
+    self.data[self.data_position[data]] = nil
+    self.data_position[data]            = nil
+    refresh_first(self)
 end
 

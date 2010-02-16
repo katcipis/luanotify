@@ -140,24 +140,137 @@ function test_after_removing_data_from_the_middle_the_previous_order_remains_the
 end
 
 function test_after_removing_data_from_the_front_the_previous_order_remains_the_same()
+    ordered_set:push_back("apple")
+    ordered_set:push_back("test")
+    ordered_set:push_back("pineapple")
+    ordered_set:push_back("end")
+
+    assert_false(ordered_set:is_empty())
+
+    local counter = 0
+    ordered_set:remove("apple")
+    for data in ordered_set:get_iterator() do
+        counter = counter + 1
+        if(counter == 1) then
+            assert_equal("test", data)
+        elseif(counter == 2) then
+            assert_equal("pineapple", data)
+        else
+            assert_equal("end", data)
+        end
+    end
+    assert_equal(3, counter)
 end
 
 function test_after_removing_data_from_the_back_the_previous_order_remains_the_same()
+    ordered_set:push_back("apple")
+    ordered_set:push_back("test")
+    ordered_set:push_back("pineapple")
+    ordered_set:push_back("end")
+
+    assert_false(ordered_set:is_empty())
+
+    local counter = 0
+    ordered_set:remove("end")
+    for data in ordered_set:get_iterator() do
+        counter = counter + 1
+        if(counter == 1) then
+            assert_equal("apple", data)
+        elseif(counter == 2) then
+            assert_equal("test", data)
+        else
+            assert_equal("pineapple", data)
+        end
+    end
+    assert_equal(3, counter)
 end
 
 function test_after_removing_all_data_it_gets_empty()
+    ordered_set:push_back("apple")
+    ordered_set:push_back("test")
+    ordered_set:push_back("pineapple")
+    ordered_set:push_back("end")
+
+    assert_false(ordered_set:is_empty())
+
+    ordered_set:remove("apple")
+    ordered_set:remove("test")
+    ordered_set:remove("pineapple")
+    ordered_set:remove("end")
+   
+    assert_true(ordered_set:is_empty())
+    local counter = 0
+    for data in ordered_set:get_iterator() do
+        counter = counter + 1
+    end
+    assert_equal(0, counter)
 end
 
 function test_if_some_data_is_pushed_twice_it_will_be_pushed_only_once()
+    ordered_set:push_back("apple")
+    ordered_set:push_back("apple")
+    local counter = 0
+    for data in ordered_set:get_iterator() do
+        counter = counter + 1
+    end
+    assert_equal(1, counter)
 end
 
 function test_if_some_data_is_pushed_twice_the_position_of_the_first_push_remains()
+    ordered_set:push_back("apple")
+    ordered_set:push_back("test")
+    ordered_set:push_back("pineapple")
+    ordered_set:push_back("apple")
+
+    assert_false(ordered_set:is_empty())
+
+    local counter = 0
+    for data in ordered_set:get_iterator() do
+        counter = counter + 1
+        if(counter == 1) then
+            assert_equal("apple", data)
+        elseif(counter == 2) then
+            assert_equal("test", data)
+        else
+            assert_equal("pineapple", data)
+        end
+    end
+    assert_equal(3, counter)
 end
 
 function test_iteration_occurs_according_to_the_order_elements_where_inserted()
+    ordered_set:push_back(3)
+    ordered_set:push_back(4)
+    ordered_set:push_back(5)
+    ordered_set:push_front(2)
+    ordered_set:push_front(1)
+
+    local counter = 1
+    for data in ordered_set:get_iterator() do
+        assert_equal(counter, data)
+        counter = counter + 1
+    end
 end
 
 function test_all_data_pushed_is_acessed_on_iteration()
+    ordered_set:push_back("apple")
+    ordered_set:push_back("coconut")
+    ordered_set:push_back("pineapple")
+
+    assert_false(ordered_set:is_empty())
+
+    local counter = 0
+    for data in ordered_set:get_iterator() do
+        counter = counter + 1
+        if(counter == 1) then
+            assert_equal("apple", data)
+        elseif(counter == 2) then
+            assert_equal("coconut", data)
+        else
+            assert_equal("pineapple", data)
+        end
+    end
+    assert_equal(3, counter)
 end
 
 lunit.main()
