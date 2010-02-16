@@ -117,6 +117,26 @@ function test_after_removing_data_the_data_will_no_longer_exist_on_the_set()
 end
 
 function test_after_removing_data_from_the_middle_the_previous_order_remains_the_same()
+    ordered_set:push_back("apple")
+    ordered_set:push_back("test")
+    ordered_set:push_back("pineapple")
+    ordered_set:push_back("end")
+
+    assert_false(ordered_set:is_empty())
+    
+    local counter = 0
+    ordered_set:remove("pineapple")
+    for data in ordered_set:get_iterator() do
+        counter = counter + 1
+        if(counter == 1) then
+            assert_equal("apple", data)
+        elseif(counter == 2) then
+            assert_equal("test", data)
+        else
+            assert_equal("end", data)
+        end
+    end
+    assert_equal(3, counter)
 end
 
 function test_after_removing_data_from_the_front_the_previous_order_remains_the_same()
