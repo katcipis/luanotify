@@ -131,7 +131,6 @@ function Signal:add_pre_emit(pre_emit_func)
     if (type(pre_emit_func) ~= "function") then
         error("add_pre_emit: expected a function, got a "..type(pre_emit_func));
     end
-
     self.pre_emit_funcs:push_back(pre_emit_func)
 end
 
@@ -145,7 +144,7 @@ function Signal:add_post_emit(post_emit_func)
     if (type(post_emit_func) ~= "function") then
         error("add_post_emit: expected a function, got a "..type(post_emit_func));
     end
-    self.post_emit_funcs:push_back(post_emit_func)
+    self.post_emit_funcs:push_front(post_emit_func)
 end
 
 
