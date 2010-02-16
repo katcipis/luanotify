@@ -74,9 +74,14 @@ function test_iteration_wont_change_the_order_of_the_data()
     end
 
 end
---------------------------------------
---TODO TEST INSERTION OF NIL VALUES --
---------------------------------------
+
+function test_if_nil_is_pushed_on_the_front_an_error_occur()
+    assert_error("table index is nil", function () ordered_set:push_front(nil) end)
+end
+
+function test_if_nil_is_pushed_on_the_back_an_error_occur()
+    assert_error("table index is nil", function () ordered_set:push_back(nil) end)
+end
 
 function test_data_pushed_on_the_front_will_be_the_first_to_access_on_iteration()
     ordered_set:push_front(1)
