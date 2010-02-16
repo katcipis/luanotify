@@ -91,6 +91,29 @@ function test_data_pushed_on_the_front_will_be_the_first_to_access_on_iteration(
 end
 
 function test_after_removing_data_the_data_will_no_longer_exist_on_the_set()
+    ordered_set:push_front("apple")
+    ordered_set:push_front("test")
+    ordered_set:push_front("pineapple")
+    ordered_set:push_front("end")
+
+    assert_false(ordered_set:is_empty())
+    
+    local counter = 0
+    ordered_set:remove("test")
+    for data in ordered_set:get_iterator() do
+        assert_not_equal("test", data)
+        counter = counter + 1
+    end
+    assert_equal(3, counter)    
+    
+    counter = 0
+    ordered_set:remove("end")
+    for data in ordered_set:get_iterator() do
+        assert_not_equal("test", data)
+        assert_not_equal("end", data)
+        counter = counter + 1
+    end
+    assert_equal(2, counter)
 end
 
 function test_after_removing_data_from_the_middle_the_previous_order_remains_the_same()
