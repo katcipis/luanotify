@@ -74,6 +74,9 @@ function test_iteration_wont_change_the_order_of_the_data()
     end
 
 end
+--------------------------------------
+--TODO TEST INSERTION OF NIL VALUES --
+--------------------------------------
 
 function test_data_pushed_on_the_front_will_be_the_first_to_access_on_iteration()
     ordered_set:push_front(1)
@@ -282,6 +285,22 @@ function test_if_you_remove_the_same_data_twice_nothing_happens()
     assert_true(ordered_set:is_empty())
 end
 
+function test_if_you_remove_data_not_inserted_on_the_set_nothing_happens()
+    ordered_set:push_back("apple")
+    assert_false(ordered_set:is_empty())
+    ordered_set:remove("coconut")
+    assert_false(ordered_set:is_empty())
+    ordered_set:remove("apple")
+    assert_true(ordered_set:is_empty())
+end
+
+function test_if_you_remove_nil_nothing_happens()
+    ordered_set:push_back("apple")
+    assert_false(ordered_set:is_empty())
+    ordered_set:remove(nil)
+    assert_false(ordered_set:is_empty())
+end
+
 function test_if_you_remove_data_from_the_middle_and_insert_it_on_the_front_it_stays_on_the_front()
     ordered_set:push_back("apple")
     ordered_set:push_back("coconut")
@@ -442,4 +461,5 @@ function test_after_it_gets_empty_it_can_be_used_again()
         counter = counter - 1
     end
 end
+
 lunit.main()
