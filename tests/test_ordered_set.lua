@@ -206,7 +206,7 @@ function test_after_removing_all_data_it_gets_empty()
     assert_equal(0, counter)
 end
 
-function test_if_some_data_is_pushed_twice_it_will_be_pushed_only_once()
+function test_if_some_data_is_pushed_twice_it_will_be_inserted_only_once()
     ordered_set:push_back("apple")
     ordered_set:push_back("apple")
     local counter = 0
@@ -282,7 +282,7 @@ function test_if_you_remove_the_same_data_twice_nothing_happens()
     assert_true(ordered_set:is_empty())
 end
 
-function test_if_you_remove_data_and_insert_it_on_the_front_it_stays_on_the_front()
+function test_if_you_remove_data_from_the_middle_and_insert_it_on_the_front_it_stays_on_the_front()
     ordered_set:push_back("apple")
     ordered_set:push_back("coconut")
     ordered_set:push_back("pineapple")
@@ -304,7 +304,7 @@ function test_if_you_remove_data_and_insert_it_on_the_front_it_stays_on_the_fron
     assert_equal(3, counter)
 end
 
-function test_if_you_remove_data_and_insert_it_on_the_back_it_stays_on_the_back()
+function test_if_you_remove_data_from_the_middle_and_insert_it_on_the_back_it_stays_on_the_back()
     ordered_set:push_back("apple")
     ordered_set:push_back("coconut")
     ordered_set:push_back("pineapple")
@@ -326,4 +326,120 @@ function test_if_you_remove_data_and_insert_it_on_the_back_it_stays_on_the_back(
     assert_equal(3, counter)
 end
 
+function test_if_you_remove_data_from_the_front_and_insert_it_on_the_front_it_stays_on_the_front()
+    ordered_set:push_back("apple")
+    ordered_set:push_back("coconut")
+    ordered_set:push_back("pineapple")
+
+    ordered_set:remove("apple")
+    ordered_set:push_front("apple")
+
+    local counter = 0
+    for data in ordered_set:get_iterator() do
+        counter = counter + 1
+        if(counter == 1) then
+            assert_equal("apple", data)
+        elseif(counter == 2) then
+            assert_equal("coconut", data)
+        else
+            assert_equal("pineapple", data)
+        end
+    end
+    assert_equal(3, counter)
+end
+
+function test_if_you_remove_data_from_the_front_and_insert_it_on_the_back_it_stays_on_the_back()
+    ordered_set:push_back("apple")
+    ordered_set:push_back("coconut")
+    ordered_set:push_back("pineapple")
+
+    ordered_set:remove("apple")
+    ordered_set:push_back("apple")
+
+    local counter = 0
+    for data in ordered_set:get_iterator() do
+        counter = counter + 1
+        if(counter == 1) then
+            assert_equal("coconut", data)
+        elseif(counter == 2) then
+            assert_equal("pineapple", data)
+        else
+            assert_equal("apple", data)
+        end
+    end
+    assert_equal(3, counter)
+end
+
+function test_if_you_remove_data_from_the_back_and_insert_it_on_the_front_it_stays_on_the_front()
+    ordered_set:push_back("apple")
+    ordered_set:push_back("coconut")
+    ordered_set:push_back("pineapple")
+
+    ordered_set:remove("pineapple")
+    ordered_set:push_front("pineapple")
+
+    local counter = 0
+    for data in ordered_set:get_iterator() do
+        counter = counter + 1
+        if(counter == 1) then
+            assert_equal("pineapple", data)
+        elseif(counter == 2) then
+            assert_equal("apple", data)
+        else
+            assert_equal("coconut", data)
+        end
+    end
+    assert_equal(3, counter)
+end
+
+function test_if_you_remove_data_from_the_back_and_insert_it_on_the_back_it_stays_on_the_back()
+    ordered_set:push_back("apple")
+    ordered_set:push_back("coconut")
+    ordered_set:push_back("pineapple")
+
+    ordered_set:remove("pineapple")
+    ordered_set:push_back("pineapple")
+
+    local counter = 0
+    for data in ordered_set:get_iterator() do
+        counter = counter + 1
+        if(counter == 1) then
+            assert_equal("apple", data)
+        elseif(counter == 2) then
+            assert_equal("coconut", data)
+        else
+            assert_equal("pineapple", data)
+        end
+    end
+    assert_equal(3, counter)
+end
+
+function test_after_it_gets_empty_it_can_be_used_again()
+    ordered_set:push_back(1)
+    ordered_set:push_back(2)
+    ordered_set:push_back(3)
+
+    local counter = 1
+    for data in ordered_set:get_iterator() do
+        assert_equal(counter, data)
+        counter = counter + 1
+    end
+    ordered_set:remove(2)
+    ordered_set:remove(1)
+    ordered_set:remove(3)
+
+    assert_true(ordered_set:is_empty())
+
+    ordered_set:push_front(1)
+    ordered_set:push_front(2)
+    ordered_set:push_front(3)
+
+    assert_false(ordered_set:is_empty())
+
+    counter = 3
+    for data in ordered_set:get_iterator() do
+        assert_equal(counter, data)
+        counter = counter - 1
+    end
+end
 lunit.main()
