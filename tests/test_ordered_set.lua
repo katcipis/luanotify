@@ -17,7 +17,7 @@
 -- but WITHOUT ANY WARRANTY; without even the implied warranty of
 -- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 -- You should have received a copy of the GNU Lesser General Public License
--- along with Luasofia.  If not, see <http://www.gnu.org/licenses/>.
+-- along with LuaNotify.  If not, see <http://www.gnu.org/licenses/>.
 ---------------------------------------------------------------------------------
 
 require "lunit"
