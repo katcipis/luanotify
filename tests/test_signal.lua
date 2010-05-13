@@ -19,7 +19,7 @@
 -- GNU Lesser General Public License for more details.
  
 -- You should have received a copy of the GNU Lesser General Public License
--- along with Luasofia.  If not, see <http://www.gnu.org/licenses/>.
+-- along with LuaNotify.  If not, see <http://www.gnu.org/licenses/>.
 ---------------------------------------------------------------------------------
 
 require "lunit"
@@ -28,7 +28,7 @@ require "luanotify.signal"
 module("signal_testcase", lunit.testcase, package.seeall)
 
 function setUp()
-    signal = Signal:new()
+    signal = luanotify.signal.new()
     call_counter = 0
 end
 
@@ -63,7 +63,7 @@ function test_if_there_is_no_handler_connected_emission_does_nothing()
 end
 
 
-function test_handlers_are_called_on_the_order_they_are_inserted()
+function test_handlers_are_called_on_a_queue_behavior()
     handler1 = function ()
                    assert_equal(0, call_counter)
                    call_counter = call_counter + 1
@@ -141,7 +141,7 @@ end
 
 function test_the_same_handler_can_be_connected_on_multiple_signals()
     local handler = function () call_counter = call_counter + 1 end
-    local signal2 = Signal:new()
+    local signal2 = luanotify.signal.new()
     
     signal:connect(handler)
     signal2:connect(handler)
@@ -331,7 +331,7 @@ end
 
 function test_the_same_pre_emit_can_be_added_on_multiple_signals()
     local pre_emit = function () call_counter = call_counter + 1 end
-    local signal2 = Signal:new()
+    local signal2 = luanotify.signal.new()
 
     signal:add_pre_emit(pre_emit)
     signal2:add_pre_emit(pre_emit)
@@ -373,7 +373,7 @@ function test_if_the_same_pre_emit_is_added_multiple_times_it_has_to_be_removed_
 end
 
 
-function test_pre_emit_functions_are_called_on_the_order_they_are_inserted()
+function test_pre_emit_functions_are_called_on_a_queue_behavior()
     handler  = function ()
                   assert_equal(2, call_counter)
                   call_counter = call_counter + 1
@@ -532,7 +532,7 @@ end
 
 function test_the_same_post_emit_can_be_added_on_multiple_signals()
     local post_emit = function () call_counter = call_counter + 1 end
-    local signal2 = Signal:new()
+    local signal2 = luanotify.signal.new()
 
     signal:add_post_emit(post_emit)
     signal2:add_post_emit(post_emit)
@@ -601,9 +601,9 @@ function test_after_being_removed_a_post_emit_function_wont_be_called_anymore()
                   call_counter = call_counter + 1
                end
 
-    signal:add_post_emit(post_emit1)
-    signal:add_post_emit(post_emit2)
     signal:add_post_emit(post_emit3)
+    signal:add_post_emit(post_emit2)
+    signal:add_post_emit(post_emit1)
     signal:emit()
     assert_equal(3, call_counter)
 
@@ -644,7 +644,7 @@ function test_if_the_same_post_emit_is_added_multiple_times_it_has_to_be_removed
 end
 
 
-function test_post_emit_functions_are_called_on_the_order_they_are_inserted()
+function test_post_emit_functions_are_called_on_a_stack_behavior()
     post_emit1 = function ()
                   assert_equal(0, call_counter)
                   call_counter = call_counter + 1
@@ -661,9 +661,9 @@ function test_post_emit_functions_are_called_on_the_order_they_are_inserted()
                end
 
     assert_equal(0, call_counter)
-    signal:add_post_emit(post_emit1)
-    signal:add_post_emit(post_emit2)
     signal:add_post_emit(post_emit3)
+    signal:add_post_emit(post_emit2)
+    signal:add_post_emit(post_emit1)
     signal:emit()
     assert_equal(3, call_counter)
 end
@@ -687,9 +687,9 @@ function test_after_removing_a_post_emit_function_the_order_of_the_post_emits_re
                end
 
     assert_equal(0, call_counter)
-    signal:add_post_emit(post_emit1)
-    signal:add_post_emit(post_emit2)
     signal:add_post_emit(post_emit3)
+    signal:add_post_emit(post_emit2)
+    signal:add_post_emit(post_emit1)
     signal:emit()
     assert_equal(3, call_counter)
 
