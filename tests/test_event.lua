@@ -23,7 +23,7 @@
 ---------------------------------------------------------------------------------
 
 require "lunit"
-require "luanotify.event"
+local event = require "luanotify.event"
 
 module("event_testcase", lunit.testcase, package.seeall)
 
