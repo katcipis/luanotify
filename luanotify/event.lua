@@ -33,27 +33,47 @@ local events = {}
 -- Public functions definition --
 ---------------------------------
 
-function connect(event, handler_function)
+function connect(event_name, handler_function)
 
 end
 
-function disconnect(event, handler_function)
+function disconnect(event_name, handler_function)
 
 end
 
-function block(event)
+function block(event_name, handler_function)
 
 end
 
-function unblock(event)
+function unblock(event_name, handler_function)
 
 end
 
-function emit(...)
+function emit(event_name, ...)
 
 end
 
-function emit_with_accumulator(accumulator, ...)
+function emit_with_accumulato_(event_name, accumulator, ...)
+
+end
+
+function add_pre_emit(event_name, pre_emit_func)
+
+end
+
+function remove_pre_emit(event_name, pre_emit_func)
+
+end
+
+function add_post_emit(event_name, post_emit_func)
+
+end
+
+function remove_post_emit(event_name, post_emit_func)
+
+end
+
+function stop()
 
 end
 
