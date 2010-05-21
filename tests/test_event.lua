@@ -186,7 +186,6 @@ end
 
 
 function test_if_the_same_handler_is_connected_multiple_times_to_the_same_event_it_has_to_be_disconnected_only_once()
-    -- FIXME: this test is the same that "test_if_the_same_handler_is_connected_multiple_times_to_the_same_event_it_will_be_called_only_once"
     handler = function ()
                   call_counter = call_counter + 1
               end
@@ -242,6 +241,18 @@ end
 
 function test_if_a_handler_is_disconnected_from_a_event_it_will_not_be_called_anymore_when_that_event_emits()
     -- FIXME: the same that "test_if_the_same_handler_is_connected_multiple_times_to_the_same_event_it_will_be_called_only_once"
+    handler = function ()
+                  call_counter = call_counter + 1
+              end
+
+    event.connect("luanotify", handler)
+    event.connect("luanotify", handler)
+    event.connect("luanotify", handler)
+    event.emit("luanotify")
+    assert_equal(1, call_counter)
+    event.disconnect("luanotify", handler)
+    event.emit("luanotify")
+    assert_equal(1, call_counter)
 end
 
 
@@ -583,7 +594,34 @@ end
 
 
 function test_after_removing_a_pre_emit_function_the_order_of_the_remaining_pre_emits_remain_the_same()
+    local pre_emit = function ()
+                         assert_equal(1, call_counter)
+                         call_counter = call_counter + 1
+                     end
+    local handler1 = function ()
+                         assert_equal(2, call_counter)
+                         call_counter = call_counter + 1
+                     end
+    local handler2 = function ()
+                         assert_equal(3, call_counter)
+                         call_counter = call_counter + 1
+                     end
+    local handler3 = function ()
+                         assert_equal(4, call_counter)
+                         call_counter = call_counter + 1
+                     end
 
+    event.add_pre_emit("luanotify::event::test", pre_emit)
+    event.connect("luanotify::event::test", handler1)
+    event.connect("luanotify::event::test", handler2)
+    event.connect("luanotify::event::test", handler3)
+
+    event.emit("luanotify::event::test")
+    assert_equal(4, call_counter)
+    event.remove_pre_emit("luanotify::event::test", pre_emit)
+    call_counter = 0
+    event.emit("luanotify::event::test")
+    assert_equal(3, call_counter)
 end
 
 
