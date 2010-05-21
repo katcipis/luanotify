@@ -32,6 +32,7 @@ function setUp()
 end
 
 function tearDown()
+    event.clear()
 end
 
 
@@ -42,11 +43,11 @@ function test_if_a_handler_function_is_connected_to_a_event_it_will_always_be_ca
     event.connect("luanotify::event", handler)
     event.connect("luanotify::event::test", handler)
     assert_equal(0, call_counter)
-    signal:emit("luanotify")
+    signal.emit("luanotify")
     assert_equal(1, call_counter)
-    signal:emit("luanotify::event")
+    signal.emit("luanotify::event")
     assert_equal(3, call_counter)
-    signal:emit("luanotify::event::test")
+    signal.emit("luanotify::event::test")
     assert_equal(6, call_counter)
 end
 
@@ -88,19 +89,20 @@ end
 
 
 function test_handlers_receive_all_the_data_that_is_passed_on_emission()
-    handler  = function (arg)
-                   assert_equal("pineapple", arg)
+    handler  = function (arg1, arg2, arg3)
+                   assert_equal("luanotify", arg1)
+                   assert_equal("apple", arg2)
+                   assert_equal("pineapple", arg3)
                end
 
     event.connect("luanotify", handler)
-    event.emit("luanotify", "pineapple")
+    event.emit("luanotify", "apple", "pineapple")
 end
 
 
 function test_the_first_parameter_given_to_a_handler_on_emission_is_always_the_name_of_the_emitted_event()
     handler  = function (arg1, arg2)
                    assert_equal("luanotify::event", arg1)
-                   assert_equal("pineapple", arg2)
                end
 
     event.connect("luanotify::event", handler)
@@ -234,7 +236,7 @@ function test_if_a_handler_is_disconnected_from_a_event_the_calling_order_of_the
 
     event.disconnect("luanotify::event", handler2)
     call_counter = 0
-    signal:emit("luanotify::event", 1)
+    event.emit("luanotify::event", 1)
 end
 
 
@@ -246,12 +248,12 @@ end
 function test_the_handler_function_must_be_disconnected_from_the_exact_same_event_it_was_connected_not_parent_events()
    local handler = function () call_counter = call_counter + 1 end
 
-    signal:connect("luanotify::event::test", handler)
+    event.connect("luanotify::event::test", handler)
     assert_equal(0, call_counter)
-    signal:emit("luanotify::event::test")
+    event.emit("luanotify::event::test")
     assert_equal(1, call_counter)
-    signal:disconnect("luanotify::event", handler)
-    signal:emit("luanotify::event::test")
+    event.disconnect("luanotify::event", handler)
+    event.emit("luanotify::event::test")
     assert_equal(2, call_counter)
 end
 
@@ -259,12 +261,12 @@ end
 function test_the_handler_function_must_be_disconnected_from_the_exact_same_event_it_was_connected_not_child_events()
    local handler = function () call_counter = call_counter + 1 end
 
-    signal:connect("luanotify::event", handler)
+    event.connect("luanotify::event", handler)
     assert_equal(0, call_counter)
-    signal:emit("luanotify::event::test")
+    event.emit("luanotify::event::test")
     assert_equal(1, call_counter)
-    signal:disconnect("luanotify::event::test", handler)
-    signal:emit("luanotify::event::test")
+    event.disconnect("luanotify::event::test", handler)
+    event.emit("luanotify::event::test")
     assert_equal(2, call_counter)
 end
 
@@ -312,13 +314,13 @@ function test_a_blocked_handler_can_be_unblocked()
 
     event.connect("luanotify::event", handler)
     assert_equal(0, call_counter)
-    signal:emit("luanotify::event")
+    event.emit("luanotify::event")
     assert_equal(1, call_counter)
-    signal:block("luanotify::event", handler)
-    signal:emit("luanotify::event")
+    event.block("luanotify::event", handler)
+    event.emit("luanotify::event")
     assert_equal(1, call_counter)
-    signal:unblock("luanotify::event", handler)
-    signal:emit("luanotify::event")
+    event.unblock("luanotify::event", handler)
+    event.emit("luanotify::event")
     assert_equal(2, call_counter)
 end
 
@@ -327,31 +329,31 @@ function test_if_you_unblock_parent_events_the_handler_can_be_unblocked()
 
     event.connect("luanotify::event", handler)
     assert_equal(0, call_counter)
-    signal:emit("luanotify::event")
+    event.emit("luanotify::event")
     assert_equal(1, call_counter)
-    signal:block("luanotify", handler)
-    signal:emit("luanotify::event")
+    event.block("luanotify", handler)
+    event.emit("luanotify::event")
     assert_equal(1, call_counter)
-    signal:unblock("luanotify", handler)
-    signal:emit("luanotify::event")
+    event.unblock("luanotify", handler)
+    event.emit("luanotify::event")
     assert_equal(2, call_counter)
 end
 
 function test_a_blocked_handler_must_be_unblocked_on_the_same_event_it_was_blocked_not_parent_events()
    local handler = function () call_counter = call_counter + 1 end
 
-    signal:connect("luanotify::event::test", handler)
+    event.connect("luanotify::event::test", handler)
     assert_equal(0, call_counter)
-    signal:emit("luanotify::event::test")
+    event.emit("luanotify::event::test")
     assert_equal(1, call_counter)
-    signal:block("luanotify::event::test", handler)
-    signal:emit("luanotify::event::test")
+    event.block("luanotify::event::test", handler)
+    event.emit("luanotify::event::test")
     assert_equal(1, call_counter)
-    signal:unblock("luanotify::event", handler)
-    signal:emit("luanotify::event::test")
+    event.unblock("luanotify::event", handler)
+    event.emit("luanotify::event::test")
     assert_equal(1, call_counter)
-    signal:unblock("luanotify::event::test", handler)
-    signal:emit("luanotify::event::test")
+    event.unblock("luanotify::event::test", handler)
+    event.emit("luanotify::event::test")
     assert_equal(2, call_counter)
 end
 
@@ -359,18 +361,18 @@ end
 function test_a_blocked_handler_must_be_unblocked_on_the_same_event_it_was_blocked_not_child_events()
    local handler = function () call_counter = call_counter + 1 end
 
-    signal:connect("luanotify::event", handler)
+    event.connect("luanotify::event", handler)
     assert_equal(0, call_counter)
-    signal:emit("luanotify::event::test")
+    event.emit("luanotify::event::test")
     assert_equal(1, call_counter)
-    signal:block("luanotify::event", handler)
-    signal:emit("luanotify::event::test")
+    event.block("luanotify::event", handler)
+    event.emit("luanotify::event::test")
     assert_equal(1, call_counter)
-    signal:unblock("luanotify::event::test", handler)
-    signal:emit("luanotify::event::test")
+    event.unblock("luanotify::event::test", handler)
+    event.emit("luanotify::event::test")
     assert_equal(1, call_counter)
-    signal:unblock("luanotify::event", handler)
-    signal:emit("luanotify::event::test")
+    event.unblock("luanotify::event", handler)
+    event.emit("luanotify::event::test")
     assert_equal(2, call_counter)
 end
 
