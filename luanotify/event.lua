@@ -47,46 +47,59 @@ end
 ---------------------------------
 
 function connect(event_name, handler_function)
-    get_nodes(event_name)
+    if not events[event_name] then
+        events[event_name].handlers   = signal.new()
+        events[event_name].pre_emits  = signal.new()
+        events[event_name].post_emits = signal.new()
+    end
+    events[event_name].handlers:connect(handler_function)
 end
 
 function disconnect(event_name, handler_function)
-
+    events[event_name].handlers:disconnect(handler_function)
 end
 
 function block(event_name, handler_function)
-
+    events[event_name].handlers:block(handler_function)
 end
 
 function unblock(event_name, handler_function)
-
+    events[event_name].handlers:unblock(handler_function)
 end
 
 function emit(event_name, ...)
-
+    events[event_name].pre_emits:emit(...)
+    events[event_name].handlers:emit(...)
+    events[event_name].post_emits:emit(...)
 end
 
-function emit_with_accumulato_(event_name, accumulator, ...)
-
+function emit_with_accumulator(event_name, accumulator, ...)
+    events[event_name].pre_emits:emit_with_accumulator(accumulator, ...)
+    events[event_name].handlers:emit_with_accumulator(accumulator, ...)
+    events[event_name].post_emits:emit_with_accumulator(accumulator, ...)
 end
 
 function add_pre_emit(event_name, pre_emit_func)
-
+    events[event_name].pre_emits:add_pre_emit(pre_emit_func)
 end
 
 function remove_pre_emit(event_name, pre_emit_func)
-
+    events[event_name].pre_emits:remove_pre_emit(pre_emit_func)    
 end
 
 function add_post_emit(event_name, post_emit_func)
-
+    events[event_name].post_emits:add_post_emit(pre_emit_func)
 end
 
 function remove_post_emit(event_name, post_emit_func)
-
+    events[event_name].post_emits:remove_post_emit(pre_emit_func)
 end
 
 function stop()
+
+end
+
+function clear()
 
 end
 
