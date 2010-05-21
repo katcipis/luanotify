@@ -48,9 +48,9 @@ end
 
 function connect(event_name, handler_function)
     if not events[event_name] then
-        events[event_name].handlers   = signal.new()
-        events[event_name].pre_emits  = signal.new()
-        events[event_name].post_emits = signal.new()
+        events[event_name] = { handlers   = signal.new(), 
+                               pre_emits  = signal.new(),
+                               post_emits = signal.new() }
     end
     events[event_name].handlers:connect(handler_function)
 end
