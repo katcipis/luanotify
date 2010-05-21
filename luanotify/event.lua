@@ -30,11 +30,24 @@ local signal = require "luanotify.signal"
 local events = {}
 
 ---------------------------------
+-- Private functions definition --
+---------------------------------
+local function get_nodes(event_name)
+    local nodes = {}
+    for n in string.gmatch(event_name, "[^:]+") do
+    --for n in string.gmatch(event_name, "[%w]-::[%w]-") do
+        print(n)
+        nodes[#nodes + 1] = n
+    end
+    return unpack(nodes)
+end
+
+---------------------------------
 -- Public functions definition --
 ---------------------------------
 
 function connect(event_name, handler_function)
-
+    get_nodes(event_name)
 end
 
 function disconnect(event_name, handler_function)
