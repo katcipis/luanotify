@@ -52,6 +52,16 @@ function test_if_a_handler_function_is_connected_to_a_event_it_will_always_be_ca
 end
 
 
+function test_you_can_have_one_handler_connected_only_on_a_subevent()
+    local handler = function () call_counter = call_counter + 1 end
+
+    event.connect("luanotify:event:test", handler)
+    assert_equal(0, call_counter)
+    event.emit("luanotify:event:test")
+    assert_equal(1, call_counter)
+end
+
+
 function test_an_error_is_generated_if_you_connect_a_handler_that_is_not_a_function()
     local handler = "not a function"
     assert_error("connect: expected a function, got a "..type(handler), function () event.connect("test", handler) end)
@@ -230,7 +240,7 @@ function test_if_a_handler_is_disconnected_from_a_event_the_calling_order_of_the
                   call_counter = call_counter + 1
                end
 
-    handler3 = function (offset)
+    handler3 = function (name, offset)
                   local offset = offset or 0
                   assert_equal(2 - offset, call_counter)
                   call_counter = call_counter + 1
@@ -395,7 +405,7 @@ function test_a_unblocked_handler_will_be_called_on_its_original_position()
                   call_counter = call_counter + 1
                end
 
-    handler3 = function (offset)
+    handler3 = function (name, offset)
                   local offset = offset or 0
                   assert_equal(2 - offset, call_counter)
                   call_counter = call_counter + 1
@@ -405,11 +415,11 @@ function test_a_unblocked_handler_will_be_called_on_its_original_position()
     event.connect("luanotify", handler2)
     event.connect("luanotify", handler3)
     event.block("luanotify", handler2)
-    event.emit(1)
+    event.emit("luanotify")
 
     call_counter = 0
     event.unblock("luanotify", handler2)
-    event.emit()
+    event.emit("luanotify")
 end
 
 
@@ -676,7 +686,7 @@ function test_if_you_add_a_post_emit_on_a_event_that_does_not_have_any_connected
 
     event.add_post_emit("test", post_emit)
     call_counter = 0
-    event.emit()
+    event.emit("test")
     assert_equal(call_counter, 1)
 end
 
