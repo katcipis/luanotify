@@ -22,7 +22,8 @@
 ---------------------------------------------------------------------------------
 module(..., package.seeall)
 
-local signal    = require "luanotify.signal"
+local set = require "luanotify.ordered_set" 
+
 local separator = ":"
 local stopped   = false
 
@@ -35,9 +36,10 @@ local events = {}
 -- Private functions definition --
 ---------------------------------
 local function new_node()
-    return { handlers   = signal.new(),
-             pre_emits  = signal.new(),
-             post_emits = signal.new(), 
+    return { handlers   = set.new(),
+             pre_emits  = set.new(),
+             post_emits = set.new(),
+             blocked_handlers = {}, 
              subevents  = {} } 
 end
 
@@ -107,34 +109,58 @@ end
 ---------------------------------
 
 function connect(event_name, handler_function)
-    get_node(event_name).handlers:connect(handler_function)
+    if (type(handler_function) ~= "function") then
+        error("connect: expected a function, got a "..type(handler_function));
+    end
+
+    local node = get_node(event_name)
+    node.handlers:push_back(handler_function)
+
+    if not node.blocked_handlers then
+        node.blocked_handlers[handler_function] = 0
+    end
 end
 
 function disconnect(event_name, handler_function)
     if unused_event(event_name) then return end
-    get_node(event_name).handlers:disconnect(handler_function)
+
+    local node = get_node(event_name)
+    node.handlers:remove(handler_function)
+    node.blocked_handlers[handler_function] = nil
 end
 
 function block(event_name, handler_function)
     if unused_event(event_name) then return end
-    get_node(event_name).handlers:block(handler_function)
+    local node = get_node(event_name)
+    local block = node.blocked_handlers[handler_function]
+    if block then
+        node.blocked_handlers[handler_function] = block + 1
+    end
 end
 
 function unblock(event_name, handler_function)
     if unused_event(event_name) then return end
-    get_node(event_name).handlers:unblock(handler_function)
+    local node = get_node(event_name)
+    if node.blocked_handlers[handler_function] and 
+       node.blocked_handlers[handler_function] > 0 then
+
+        node.blocked_handlers[handler_function] = node.blocked_handlers[handler_function] - 1
+    end
 end
 
 function emit(event_name, ...)
     stopped = false
     for node in event_iterator(event_name) do
-        node.pre_emits:emit(event_name,...)
-        if(stopped) then
-            node.handlers:stop()
-        else
-            node.handlers:emit(event_name,...)
+        for pre_emit in node.pre_emits:get_iterator() do pre_emit(event_name) end
+
+        for handler in node.handlers:get_iterator() do
+            if(stopped) then break end
+            if(node.blocked_handlers[handler] == 0) then
+                handler(event_name, ...)
+            end
         end
-        node.post_emits:emit(event_name,...)
+
+        for post_emit in node.post_emits:get_iterator() do post_emit(event_name) end
     end
 end
 
@@ -142,37 +168,44 @@ function emit_with_accumulator(event_name, accumulator, ...)
     if (type(accumulator) ~= "function") then
         error("emit_with_accumulator: expected a function, got a "..type(accumulator));
     end
-
     stopped = false
+
     for node in event_iterator(event_name) do
-        node.pre_emits:emit_with_accumulator(accumulator, event_name, ...)
-        if(stopped) then
-            node.handlers:stop()
-        else
-            node.handlers:emit_with_accumulator(accumulator, event_name, ...)
+        for pre_emit in node.pre_emits:get_iterator() do pre_emit(event_name) end
+
+        for handler in node.handlers:get_iterator() do
+            if(stopped) then break end
+            if(node.blocked_handlers[handler] == 0) then
+                accumulator(handler(event_name, ...))
+            end
         end
-        node.post_emits:emit_with_accumulator(accumulator, event_name, ...)
+
+        for post_emit in node.post_emits:get_iterator() do post_emit(event_name) end
     end
 end
 
 function add_pre_emit(event_name, pre_emit_func)
-    get_node(event_name).pre_emits:add_pre_emit(pre_emit_func)
+    if (type(pre_emit_func) ~= "function") then
+        error("add_pre_emit: expected a function, got a "..type(pre_emit_func));
+    end
+    get_node(event_name).pre_emits:push_back(pre_emit_func)
 end
 
 function remove_pre_emit(event_name, pre_emit_func)
     if unused_event(event_name) then return end
-    local node = get_node(event_name)
-    node.pre_emits:remove_pre_emit(pre_emit_func)    
+    get_node(event_name).pre_emits:remove(pre_emit_func)    
 end
 
 function add_post_emit(event_name, post_emit_func)
-    get_node(event_name).post_emits:add_post_emit(post_emit_func)
+    if (type(post_emit_func) ~= "function") then
+        error("add_pre_emit: expected a function, got a "..type(post_emit_func));
+    end 
+    get_node(event_name).post_emits:push_front(post_emit_func)
 end
 
 function remove_post_emit(event_name, post_emit_func)
     if unused_event(event_name) then return end
-    local node = get_node(event_name)
-    node.post_emits:remove_post_emit(post_emit_func)
+    get_node(event_name).post_emits:remove(post_emit_func)
 end
 
 function stop()

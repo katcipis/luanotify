@@ -839,20 +839,17 @@ end
 
 function test_after_being_removed_a_post_emit_function_wont_be_called_anymore()
     local post_emit1 = function (name)
-                  print("post_emit1 ")
                   assert_equal(0, call_counter)
                   call_counter = call_counter + 1
                end
 
     local post_emit2 = function (name)
-                  print("post_emit2 ")
                   assert_equal(1, call_counter)
                   call_counter = call_counter + 1
                end
 
     local offset = 0
     local post_emit3 = function (name)
-                  print("post_emit3")
                   assert_equal(2 - offset, call_counter)
                   call_counter = call_counter + 1
                end
