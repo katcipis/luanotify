@@ -42,57 +42,75 @@ local function get_nodes(event_name)
     return unpack(nodes)
 end
 
+
+local function check_event(event_name)
+    if not events[event_name] then
+        events[event_name] = { handlers   = signal.new(),
+                               pre_emits  = signal.new(),
+                               post_emits = signal.new() }
+    end
+end
+
+local function unused_event(event_name) 
+    return not events[event_name]
+end
+
 ---------------------------------
 -- Public functions definition --
 ---------------------------------
 
 function connect(event_name, handler_function)
-    if not events[event_name] then
-        events[event_name] = { handlers   = signal.new(), 
-                               pre_emits  = signal.new(),
-                               post_emits = signal.new() }
-    end
+    check_event(event_name)
     events[event_name].handlers:connect(handler_function)
 end
 
 function disconnect(event_name, handler_function)
+    if unused_event(event_name) then return end
     events[event_name].handlers:disconnect(handler_function)
 end
 
 function block(event_name, handler_function)
+    if unused_event(event_name) then return end
     events[event_name].handlers:block(handler_function)
 end
 
 function unblock(event_name, handler_function)
+    if unused_event(event_name) then return end
     events[event_name].handlers:unblock(handler_function)
 end
 
 function emit(event_name, ...)
+    if unused_event(event_name) then return end
     events[event_name].pre_emits:emit(...)
     events[event_name].handlers:emit(...)
     events[event_name].post_emits:emit(...)
 end
 
 function emit_with_accumulator(event_name, accumulator, ...)
+    if unused_event(event_name) then return end
     events[event_name].pre_emits:emit_with_accumulator(accumulator, ...)
     events[event_name].handlers:emit_with_accumulator(accumulator, ...)
     events[event_name].post_emits:emit_with_accumulator(accumulator, ...)
 end
 
 function add_pre_emit(event_name, pre_emit_func)
+    check_event(event_name)
     events[event_name].pre_emits:add_pre_emit(pre_emit_func)
 end
 
 function remove_pre_emit(event_name, pre_emit_func)
+    if unused_event(event_name) then return end
     events[event_name].pre_emits:remove_pre_emit(pre_emit_func)    
 end
 
 function add_post_emit(event_name, post_emit_func)
-    events[event_name].post_emits:add_post_emit(pre_emit_func)
+    check_event(event_name)
+    events[event_name].post_emits:add_post_emit(post_emit_func)
 end
 
 function remove_post_emit(event_name, post_emit_func)
-    events[event_name].post_emits:remove_post_emit(pre_emit_func)
+    if unused_event(event_name) then return end
+    events[event_name].post_emits:remove_post_emit(post_emit_func)
 end
 
 function stop()
