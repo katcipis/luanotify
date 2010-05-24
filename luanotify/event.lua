@@ -22,7 +22,8 @@
 ---------------------------------------------------------------------------------
 module(..., package.seeall)
 
-local signal = require "luanotify.signal"
+local signal    = require "luanotify.signal"
+local separator = ":"
 
 ---------------------------------------
 -- Internal data (registered events) --
@@ -42,7 +43,7 @@ end
 
 local function get_nodes_names(event_name)
     local nodes_names = {}
-    for n in string.gmatch(event_name, "[^:]+") do
+    for n in string.gmatch(event_name, "[^"..separator.."]+") do
         nodes_names[#nodes_names + 1] = n
     end
     return nodes_names
@@ -78,6 +79,28 @@ local function unused_event(event_name)
     return false
 end
 
+local function event_iterator(event_name)
+    local events_names = get_nodes_names(event_name)
+    local i = 2
+    local current_node = events[events_names[1]]
+
+    local function iterator() 
+        if not current_node then return end
+        local ret = current_node
+
+        if events_names[i] then
+            current_node = current_node.subevents[events_names[i]]
+            i = i + 1
+        else
+            current_node = nil
+        end
+        
+        return ret
+    end
+
+    return iterator
+end
+
 ---------------------------------
 -- Public functions definition --
 ---------------------------------
@@ -102,19 +125,19 @@ function unblock(event_name, handler_function)
 end
 
 function emit(event_name, ...)
-    if unused_event(event_name) then return end
-    local node = get_node(event_name)
-    node.pre_emits:emit(event_name,...)
-    node.handlers:emit(event_name,...)
-    node.post_emits:emit(event_name,...)
+    for node in event_iterator(event_name) do
+        node.pre_emits:emit(event_name,...)
+        node.handlers:emit(event_name,...)
+        node.post_emits:emit(event_name,...)
+    end
 end
 
 function emit_with_accumulator(event_name, accumulator, ...)
-    if unused_event(event_name) then return end
-    local node = get_node(event_name)
-    node.pre_emits:emit_with_accumulator(accumulator, event_name, ...)
-    node.handlers:emit_with_accumulator(accumulator, event_name, ...)
-    node.post_emits:emit_with_accumulator(accumulator, event_name, ...)
+    for node in event_iterator(event_name) do
+        node.pre_emits:emit_with_accumulator(accumulator, event_name, ...)
+        node.handlers:emit_with_accumulator(accumulator, event_name, ...)
+        node.post_emits:emit_with_accumulator(accumulator, event_name, ...)
+    end
 end
 
 function add_pre_emit(event_name, pre_emit_func)
@@ -144,4 +167,3 @@ end
 function clear(event_name)
     events = {} 
 end
-
