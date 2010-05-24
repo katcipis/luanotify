@@ -109,7 +109,7 @@ end
 
 function Signal:emit_with_accumulator(accumulator, ...)
     if (type(accumulator) ~= "function") then
-        return
+        error("emit_with_accumulator: expected a function, got a "..type(accumulator));
     end
 
     self.signal_stopped = false;

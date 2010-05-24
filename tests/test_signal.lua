@@ -709,7 +709,7 @@ function test_if_you_remove_a_post_emit_that_does_not_exist_nothing_happens()
 end
 
 
-function test_if_the_accumulator_is_not_function_the_handlers_are_not_called()
+function test_if_the_accumulator_is_not_function_an_error_is_raised()
     local handler = function ()
                         assert_equal(0, call_counter)
                         call_counter = call_counter + 1
@@ -717,8 +717,9 @@ function test_if_the_accumulator_is_not_function_the_handlers_are_not_called()
                     end
 
     signal:connect(handler)
-    signal:emit_with_accumulator()
-    assert_equal(0, call_counter)
+    assert_error("emit_with_accumulator: expected a function, got a "..type(nil), function () signal:emit_with_accumulator() end)
+    assert_error("emit_with_accumulator: expected a function, got a "..type(5), function () signal:emit_with_accumulator(5) end)
+    assert_error("emit_with_accumulator: expected a function, got a "..type("error"), function () signal:emit_with_accumulator("error") end)
 end
 
 function test_the_return_value_of_each_handler_is_passed_to_the_accumulator()
