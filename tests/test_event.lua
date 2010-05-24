@@ -351,21 +351,6 @@ function test_a_blocked_handler_can_be_unblocked()
     assert_equal(2, call_counter)
 end
 
-function test_if_you_unblock_parent_events_the_handler_can_be_unblocked()
-    local handler = function (name) call_counter = call_counter + 1 end
-
-    event.connect("luanotify:event", handler)
-    assert_equal(0, call_counter)
-    event.emit("luanotify:event")
-    assert_equal(1, call_counter)
-    event.block("luanotify", handler)
-    event.emit("luanotify:event")
-    assert_equal(1, call_counter)
-    event.unblock("luanotify", handler)
-    event.emit("luanotify:event")
-    assert_equal(2, call_counter)
-end
-
 function test_a_blocked_handler_must_be_unblocked_on_the_same_event_it_was_blocked_not_parent_events()
    local handler = function (name) call_counter = call_counter + 1 end
 
