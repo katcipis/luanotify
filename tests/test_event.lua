@@ -672,9 +672,9 @@ function test_pre_emit_functions_are_called_only_before_the_handlers_of_the_exac
 
     event.add_pre_emit("luanotify:event", pre_emit)
     event.emit("luanotify")
-    assert_equals(0, call_counter)
+    assert_equal(0, call_counter)
     event.emit("luanotify:event")
-    assert_equals(1, call_counter)
+    assert_equal(1, call_counter)
 end
 
 
@@ -686,9 +686,9 @@ function test_pre_emit_functions_are_called_only_before_the_handlers_of_the_exac
 
     event.add_pre_emit("luanotify:event", pre_emit)
     event.emit("luanotify")
-    assert_equals(0, call_counter)
+    assert_equal(0, call_counter)
     event.emit("luanotify:event")
-    assert_equals(1, call_counter)
+    assert_equal(1, call_counter)
 end
 
 
@@ -700,7 +700,7 @@ function test_if_you_add_a_pre_emit_on_a_event_that_does_not_have_any_connected_
 
     event.add_pre_emit("luanotify:event", pre_emit)
     event.emit("luanotify:event")
-    assert_equals(1, call_counter)
+    assert_equal(1, call_counter)
 end
 
 
@@ -712,7 +712,7 @@ function test_no_emission_data_is_passed_to_the_pre_emit_functions()
 
     event.add_pre_emit("luanotify:event", pre_emit)
     event.emit("luanotify:event", "pineapple")
-    assert_equals(1, call_counter)
+    assert_equal(1, call_counter)
 end
 
 
@@ -758,9 +758,9 @@ function test_post_emit_functions_are_called_only_after_the_handlers_of_the_exac
 
     event.add_post_emit("luanotify:event", post_emit)
     event.emit("luanotify")
-    assert_equals(0, call_counter)
+    assert_equal(0, call_counter)
     event.emit("luanotify:event")
-    assert_equals(1, call_counter)
+    assert_equal(1, call_counter)
 end
 
 
@@ -772,9 +772,9 @@ function test_post_emit_functions_are_called_only_after_the_handlers_of_the_exac
 
     event.add_post_emit("luanotify:event", post_emit)
     event.emit("luanotify")
-    assert_equals(0, call_counter)
+    assert_equal(0, call_counter)
     event.emit("luanotify:event")
-    assert_equals(1, call_counter)
+    assert_equal(1, call_counter)
 end
 
 
@@ -848,7 +848,7 @@ function test_no_emission_data_is_passed_to_the_post_emit_functions()
 
     event.add_post_emit("luanotify:event", post_emit)
     event.emit("luanotify:event", "pineapple")
-    assert_equals(1, call_counter)
+    assert_equal(1, call_counter)
 end
 
 
@@ -961,7 +961,7 @@ function test_after_removing_a_post_emit_function_the_order_of_the_post_emits_re
 
     event.remove_post_emit("luanotify:event", post_emit2)
     offset = 1; call_counter = 0
-    event.emit()
+    event.emit("luanotify:event")
     assert_equal(2, call_counter)
 end
 
@@ -1008,7 +1008,7 @@ function test_the_return_value_of_each_handler_is_passed_to_the_accumulator()
 
     local counter = 0
 
-    local accumulator = function (name, arg1)
+    local accumulator = function (arg1)
                             counter = counter + arg1
                         end
 
@@ -1035,7 +1035,7 @@ function test_the_return_value_of_each_handler_on_all_the_events_on_the_branch_o
 
     local counter = 0
 
-    local accumulator = function (name, arg1)
+    local accumulator = function (arg1)
                             assert_equal("luanotify:event", name)
                             counter = counter + arg1
                         end
@@ -1059,7 +1059,7 @@ function test_after_the_execution_of_each_handler_the_accumulator_is_called()
 
     local counter = 0
 
-    local accumulator = function (name)
+    local accumulator = function ()
                             counter = counter + 1
                             assert_equal(call_counter, counter)
                         end
@@ -1074,7 +1074,7 @@ function test_even_when_the_handler_returns_nil_it_is_repassed_to_the_accumulato
     local handler = function ()
                     end
 
-    local accumulator = function (name, arg)
+    local accumulator = function (arg)
                             assert_nil(arg)
                         end
 
@@ -1088,9 +1088,9 @@ function test_the_handlers_can_return_multiple_values_to_the_accumulator()
                         return 1, 2
                     end
 
-    local accumulator = function (name, arg1, arg2)
+    local accumulator = function (arg1, arg2)
                             assert_equal(arg1, 1)
-                            assert_equal(arg1, 2)
+                            assert_equal(arg2, 2)
                         end
 
     event.connect("luanotify:event", handler)
@@ -1107,7 +1107,7 @@ function test_pre_emit_functions_return_values_are_not_passed_to_the_accumulator
                        return 2
                     end
 
-    local accumulator = function (name, arg)
+    local accumulator = function (arg)
                             assert_equal(arg, 2)
                         end
 
@@ -1126,7 +1126,7 @@ function test_post_emit_functions_return_values_are_not_passed_to_the_accumulato
                        return 2
                     end
 
-    local accumulator = function (name, arg)
+    local accumulator = function (arg)
                             assert_equal(arg, 2)
                         end
 
@@ -1209,13 +1209,13 @@ function test_emission_can_be_stopped_inside_a_pre_emit()
                          event.stop("luanotify:event")
                      end
 
-    local handler2 = function (name)
+    local handler1 = function (name)
                          assert_equal(1, call_counter)
                          call_counter = call_counter + 1
                      end
 
-    event.add_pre_emit("luanotify", handler1)
-    event.connect("luanotify:event", handler2)
+    event.add_pre_emit("luanotify", pre_emit)
+    event.connect("luanotify:event", handler1)
 
     event.emit("luanotify:event")
     assert_equal(1, call_counter)
@@ -1233,7 +1233,7 @@ function test_emission_can_be_stopped_inside_a_accumulator()
                         call_counter = call_counter + 1
                      end
 
-    local accumulator = function (name)
+    local accumulator = function ()
                             event.stop()
                         end
 
