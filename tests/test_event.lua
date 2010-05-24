@@ -690,10 +690,10 @@ end
 
 
 function test_no_emission_data_is_passed_to_the_pre_emit_functions()
-    local pre_emit = function (name, arg)
-                         assert_equal("luanotify:event", name)
+    local pre_emit = function (arg)
                          assert_nil(arg)
-               end
+                         call_counter = call_counter + 1
+                     end
 
     event.add_pre_emit("luanotify:event", pre_emit)
     event.emit("luanotify:event", "pineapple")
@@ -826,10 +826,10 @@ end
 
 
 function test_no_emission_data_is_passed_to_the_post_emit_functions()
-    local post_emit = function (name, arg)
-                         assert_equal("luanotify:event", name)
-                         assert_nil(arg)
-               end
+    local post_emit = function (arg)
+                          assert_nil(arg)
+                          call_counter = call_counter + 1
+                      end
 
     event.add_post_emit("luanotify:event", post_emit)
     event.emit("luanotify:event", "pineapple")
@@ -839,17 +839,20 @@ end
 
 function test_after_being_removed_a_post_emit_function_wont_be_called_anymore()
     local post_emit1 = function (name)
+                  print("post_emit1 ")
                   assert_equal(0, call_counter)
                   call_counter = call_counter + 1
                end
 
     local post_emit2 = function (name)
+                  print("post_emit2 ")
                   assert_equal(1, call_counter)
                   call_counter = call_counter + 1
                end
 
     local offset = 0
     local post_emit3 = function (name)
+                  print("post_emit3")
                   assert_equal(2 - offset, call_counter)
                   call_counter = call_counter + 1
                end
@@ -974,7 +977,7 @@ end
 
 function test_if_the_accumulator_is_not_a_function_gives_out_a_error()
     local accumulator = "not a function"
-    assert_error("emit_with_accumulator: expected a function, got a "..type(accumulator), function () event.emit_with_accumulator("luanotify", accum) end)
+    assert_error("emit_with_accumulator: expected a function, got a "..type(accumulator), function () event.emit_with_accumulator("luanotify", accumulator) end)
 end
 
 
@@ -1021,7 +1024,6 @@ function test_the_return_value_of_each_handler_on_all_the_events_on_the_branch_o
     local counter = 0
 
     local accumulator = function (arg1)
-                            assert_equal("luanotify:event", name)
                             counter = counter + arg1
                         end
 
@@ -1130,7 +1132,7 @@ function test_after_a_stop_no_more_handlers_are_called_on_that_emission()
     local handler2 = function (name)
                          assert_equal(1, call_counter)
                          call_counter = call_counter + 1
-                         event.stop("luanotify:event")
+                         event.stop()
                      end
 
     local handler3 = function (name)
@@ -1151,7 +1153,7 @@ function test_emission_can_be_stopped_inside_a_handler()
     local handler1 = function (name)
                          assert_equal(0, call_counter)
                          call_counter = call_counter + 1
-                         event.stop("luanotify:event")
+                         event.stop()
                      end
 
     local handler2 = function (name)
@@ -1171,7 +1173,7 @@ function test_emission_can_be_stopped_inside_any_handler_on_the_emitted_event_br
     local handler1 = function (name)
                          assert_equal(0, call_counter)
                          call_counter = call_counter + 1
-                         event.stop("luanotify:event")
+                         event.stop()
                      end
 
     local handler2 = function (name)
@@ -1191,7 +1193,7 @@ function test_emission_can_be_stopped_inside_a_pre_emit()
     local pre_emit = function (name)
                          assert_equal(0, call_counter)
                          call_counter = call_counter + 1
-                         event.stop("luanotify:event")
+                         event.stop()
                      end
 
     local handler1 = function (name)
@@ -1233,7 +1235,7 @@ function test_stopping_will_not_stop_the_pre_emit_functions()
     local pre_emit1 = function (name)
                         assert_equal(0, call_counter)
                         call_counter = call_counter + 1
-                        event.stop("luanotify:event")
+                        event.stop()
                     end
 
     local pre_emit2 = function (name)
@@ -1263,7 +1265,7 @@ function test_stopping_will_not_stop_the_post_emit_functions()
     local handler1 = function (name)
                          assert_equal(0, call_counter)
                          call_counter = call_counter + 1
-                         event.stop("luanotify:event")
+                         event.stop()
                      end
 
     local handler2 = function (name)

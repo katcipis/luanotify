@@ -24,6 +24,7 @@ module(..., package.seeall)
 
 local signal    = require "luanotify.signal"
 local separator = ":"
+local stopped   = false
 
 ---------------------------------------
 -- Internal data (registered events) --
@@ -125,17 +126,31 @@ function unblock(event_name, handler_function)
 end
 
 function emit(event_name, ...)
+    stopped = false
     for node in event_iterator(event_name) do
         node.pre_emits:emit(event_name,...)
-        node.handlers:emit(event_name,...)
+        if(stopped) then
+            node.handlers:stop()
+        else
+            node.handlers:emit(event_name,...)
+        end
         node.post_emits:emit(event_name,...)
     end
 end
 
 function emit_with_accumulator(event_name, accumulator, ...)
+    if (type(accumulator) ~= "function") then
+        error("emit_with_accumulator: expected a function, got a "..type(accumulator));
+    end
+
+    stopped = false
     for node in event_iterator(event_name) do
         node.pre_emits:emit_with_accumulator(accumulator, event_name, ...)
-        node.handlers:emit_with_accumulator(accumulator, event_name, ...)
+        if(stopped) then
+            node.handlers:stop()
+        else
+            node.handlers:emit_with_accumulator(accumulator, event_name, ...)
+        end
         node.post_emits:emit_with_accumulator(accumulator, event_name, ...)
     end
 end
@@ -161,7 +176,7 @@ function remove_post_emit(event_name, post_emit_func)
 end
 
 function stop()
-
+    stopped = true
 end
 
 function clear(event_name)
