@@ -32,14 +32,50 @@ local events = {}
 ---------------------------------
 -- Private functions definition --
 ---------------------------------
-local function get_nodes(event_name)
-    local nodes = {}
+local function new_node()
+    return { handlers   = signal.new(),
+             pre_emits  = signal.new(),
+             post_emits = signal.new(), 
+             subevents  = {} } 
+end
+
+
+local function get_nodes_names(event_name)
+    local nodes_names = {}
     for n in string.gmatch(event_name, "[^:]+") do
-    --for n in string.gmatch(event_name, "[%w]-::[%w]-") do
-        print(n)
-        nodes[#nodes + 1] = n
+        nodes_names[#nodes_names + 1] = n
     end
-    return unpack(nodes)
+    return nodes_names
+end
+
+
+local function get_node(event_name)
+    local events_names = get_nodes_names(event_name)
+    local current_node = events[events_names[1]] or new_node()
+
+    events[events_names[1]] = current_node
+    for i=2, #events_names do
+        sub_node = current_node.subevents[events_names[i]] or new_node()
+        current_node.subevents[events_names[i]] = sub_node
+        current_node = sub_node
+    end
+    return current_node
+end
+
+
+local function unused_event(event_name)
+    local events_names = get_nodes_names(event_name)
+    local current_node = events[events_names[1]] 
+
+    if not current_node then return true end
+
+    for i=2, #events_names do
+        sub_node = current_node.subevents[events_names[i]] 
+        if not sub_node then return true end
+        current_node = sub_node
+    end
+
+    return false
 end
 
 ---------------------------------
@@ -47,46 +83,65 @@ end
 ---------------------------------
 
 function connect(event_name, handler_function)
-    get_nodes(event_name)
+    get_node(event_name).handlers:connect(handler_function)
 end
 
 function disconnect(event_name, handler_function)
-
+    if unused_event(event_name) then return end
+    get_node(event_name).handlers:disconnect(handler_function)
 end
 
 function block(event_name, handler_function)
-
+    if unused_event(event_name) then return end
+    get_node(event_name).handlers:block(handler_function)
 end
 
 function unblock(event_name, handler_function)
-
+    if unused_event(event_name) then return end
+    get_node(event_name).handlers:unblock(handler_function)
 end
 
 function emit(event_name, ...)
-
+    if unused_event(event_name) then return end
+    local node = get_node(event_name)
+    node.pre_emits:emit(event_name,...)
+    node.handlers:emit(event_name,...)
+    node.post_emits:emit(event_name,...)
 end
 
-function emit_with_accumulato_(event_name, accumulator, ...)
-
+function emit_with_accumulator(event_name, accumulator, ...)
+    if unused_event(event_name) then return end
+    local node = get_node(event_name)
+    node.pre_emits:emit_with_accumulator(accumulator, event_name, ...)
+    node.handlers:emit_with_accumulator(accumulator, event_name, ...)
+    node.post_emits:emit_with_accumulator(accumulator, event_name, ...)
 end
 
 function add_pre_emit(event_name, pre_emit_func)
-
+    get_node(event_name).pre_emits:add_pre_emit(pre_emit_func)
 end
 
 function remove_pre_emit(event_name, pre_emit_func)
-
+    if unused_event(event_name) then return end
+    local node = get_node(event_name)
+    node.pre_emits:remove_pre_emit(pre_emit_func)    
 end
 
 function add_post_emit(event_name, post_emit_func)
-
+    get_node(event_name).post_emits:add_post_emit(post_emit_func)
 end
 
 function remove_post_emit(event_name, post_emit_func)
-
+    if unused_event(event_name) then return end
+    local node = get_node(event_name)
+    node.post_emits:remove_post_emit(post_emit_func)
 end
 
 function stop()
 
+end
+
+function clear(event_name)
+    events = {} 
 end
 
