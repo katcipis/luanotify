@@ -106,33 +106,32 @@ end
 
 local function call_pre_emits(event_name)
     local nodes = set.new()
-    local rev_nodes = set.new()
+    local reversed_nodes = set.new()
 
     for node in event_iterator(event_name) do
         for pre_emit in node.pre_emits:get_iterator() do pre_emit(event_name) end
         nodes:push_back(node)
-        rev_nodes:push_front(node)
+        reversed_nodes:push_front(node)
     end
 
-    return nodes, rev_nodes
+    return nodes, reversed_nodes
 end
 
-local function call_post_emits(event_name, rev_nodes)
-    for node in rev_nodes:get_iterator() do
+local function call_post_emits(event_name, reversed_nodes)
+    for node in reversed_nodes:get_iterator() do
         for post_emit in node.post_emits:get_iterator() do post_emit(event_name) end
     end
 end
 
 local function call_handlers(params)
-
     for node in params.nodes:get_iterator() do
         for handler in node.handlers:get_iterator() do
             if(stopped) then return end
             if(node.blocked_handlers[handler] == 0) then
                 if(params.accumulator) then
-                    params.accumulator(handler(event_name, unpack(params.args)))
+                    params.accumulator(handler(params.event_name, unpack(params.args)))
                 else
-                    handler(event_name, unpack(params.args))
+                    handler(params.event_name, unpack(params.args))
                 end
             end
         end
@@ -152,7 +151,7 @@ function connect(event_name, handler_function)
     local node = get_node(event_name)
     node.handlers:push_back(handler_function)
 
-    if not node.blocked_handlers then
+    if not node.blocked_handlers[handler_function] then
         node.blocked_handlers[handler_function] = 0
     end
 end
@@ -186,9 +185,9 @@ end
 
 function emit(event_name, ...)
     stopped = false
-    local nodes, rev_nodes = call_pre_emits(event_name)
-    call_handlers{event_name=event_name, nodes=nodes, args={...}}
-    call_post_emits(event_name, rev_nodes)
+    local nodes, reversed_nodes = call_pre_emits(event_name)
+    call_handlers({event_name=event_name, nodes=nodes, args={...}})
+    call_post_emits(event_name, reversed_nodes)
 end
 
 function emit_with_accumulator(event_name, accumulator, ...)
@@ -196,9 +195,9 @@ function emit_with_accumulator(event_name, accumulator, ...)
         error("emit_with_accumulator: expected a function, got a "..type(accumulator));
     end
     stopped = false
-    local nodes, rev_nodes = call_pre_emits(event_name)
+    local nodes, reversed_nodes = call_pre_emits(event_name)
     call_handlers{event_name=event_name, nodes=nodes, accumulator=accumulator, args={...}}
-    call_post_emits(event_name, rev_nodes)
+    call_post_emits(event_name, reversed_nodes)
 end
 
 function add_pre_emit(event_name, pre_emit_func)

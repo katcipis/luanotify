@@ -35,7 +35,6 @@ function tearDown()
     event.clear()
 end
 
-
 function test_if_a_handler_function_is_connected_to_a_event_it_will_always_be_called_when_that_event_emission_occurs()
     local handler = function (name) call_counter = call_counter + 1 end
 
@@ -146,23 +145,23 @@ end
 
 
 function test_handlers_receive_all_the_data_that_is_passed_on_emission_on_the_order_it_was_on_emission_call()
-    local handler1  = function (arg1, arg2)
+    local handler1  = function (name, arg1)
                    assert_equal(0, call_counter)
                    call_counter = call_counter + 1
-                   assert_equal("luanotify:event:test", arg1)
-                   assert_equal("pineapple", arg2)
+                   assert_equal("luanotify:event:test", name)
+                   assert_equal("pineapple", arg1)
                end
-    local handler2  = function (arg1, arg2)
+    local handler2  = function (name, arg1)
                    assert_equal(1, call_counter)
                    call_counter = call_counter + 1
-                   assert_equal("luanotify:event:test", arg1)
-                   assert_equal("pineapple", arg2)
+                   assert_equal("luanotify:event:test", name)
+                   assert_equal("pineapple", arg1)
                end
-    local handler3  = function (arg1, arg2)
+    local handler3  = function (name, arg1)
                    assert_equal(2, call_counter)
                    call_counter = call_counter + 1
-                   assert_equal("luanotify:event:test", arg1)
-                   assert_equal("pineapple", arg2)
+                   assert_equal("luanotify:event:test", name)
+                   assert_equal("pineapple", arg1)
                end
 
     event.connect("luanotify", handler1)
@@ -335,9 +334,9 @@ function test_if_you_unblock_a_disconnected_handler_nothing_happens()
     event.unblock("luanotify:event", handler)
 end
 
-
 function test_a_blocked_handler_can_be_unblocked()
-    local handler = function (name) call_counter = call_counter + 1 end
+    local handler = function (name) 
+call_counter = call_counter + 1 end
 
     event.connect("luanotify:event", handler)
     assert_equal(0, call_counter)
@@ -350,6 +349,7 @@ function test_a_blocked_handler_can_be_unblocked()
     event.emit("luanotify:event")
     assert_equal(2, call_counter)
 end
+
 
 function test_a_blocked_handler_must_be_unblocked_on_the_same_event_it_was_blocked_not_parent_events()
    local handler = function (name) call_counter = call_counter + 1 end
@@ -442,7 +442,6 @@ function test_a_handler_must_be_unblocked_the_same_times_it_has_been_blocked()
     assert_equal(1, call_counter)
 end
 
-
 function test_a_handler_must_be_unblocked_the_same_times_and_on_the_same_event_it_has_been_blocked_not_parent_events()
     local handler = function (name) call_counter = call_counter + 1 end
 
@@ -462,31 +461,30 @@ function test_a_handler_must_be_unblocked_the_same_times_and_on_the_same_event_i
     assert_equal(0, call_counter)
 
     event.unblock("luanotify:event", handler)
-    event.emit("luanotify")
+    event.emit("luanotify:event")
     assert_equal(1, call_counter)
 end
-
 
 function test_a_handler_must_be_unblocked_the_same_times_and_on_the_same_event_it_has_been_blocked_not_child_events()
     local handler = function (name) call_counter = call_counter + 1 end
 
-    event.connect("luanotify:event:test", handler)
+    event.connect("luanotify:event", handler)
     event.block("luanotify:event", handler)
     event.block("luanotify:event", handler)
 
-    event.emit("luanotify:event:test")
+    event.emit("luanotify:event")
     assert_equal(0, call_counter)
 
     event.unblock("luanotify:event", handler)
-    event.emit("luanotify:event:test")
+    event.emit("luanotify:event")
     assert_equal(0, call_counter)
 
     event.unblock("luanotify:event:test", handler)
-    event.emit("luanotify:event:test")
+    event.emit("luanotify:event")
     assert_equal(0, call_counter)
 
     event.unblock("luanotify:event", handler)
-    event.emit("luanotify:event:test")
+    event.emit("luanotify:event")
     assert_equal(1, call_counter)
 end
 
@@ -596,19 +594,19 @@ end
 
 function test_after_removing_a_pre_emit_function_the_order_of_the_remaining_pre_emits_remain_the_same()
     local pre_emit = function (name)
-                         assert_equal(1, call_counter)
+                         assert_equal(0, call_counter)
                          call_counter = call_counter + 1
                      end
     local handler1 = function (name)
-                         assert_equal(2, call_counter)
+                         assert_equal(1, call_counter)
                          call_counter = call_counter + 1
                      end
     local handler2 = function (name)
-                         assert_equal(3, call_counter)
+                         assert_equal(2, call_counter)
                          call_counter = call_counter + 1
                      end
     local handler3 = function (name)
-                         assert_equal(4, call_counter)
+                         assert_equal(3, call_counter)
                          call_counter = call_counter + 1
                      end
 
@@ -620,9 +618,9 @@ function test_after_removing_a_pre_emit_function_the_order_of_the_remaining_pre_
     event.emit("luanotify:event:test")
     assert_equal(4, call_counter)
     event.remove_pre_emit("luanotify:event:test", pre_emit)
-    call_counter = 0
+    call_counter = 1
     event.emit("luanotify:event:test")
-    assert_equal(3, call_counter)
+    assert_equal(4, call_counter)
 end
 
 
@@ -690,7 +688,7 @@ end
 
 
 function test_no_emission_data_is_passed_to_the_pre_emit_functions()
-    local pre_emit = function (arg)
+    local pre_emit = function (name, arg)
                          assert_nil(arg)
                          call_counter = call_counter + 1
                      end
@@ -826,7 +824,7 @@ end
 
 
 function test_no_emission_data_is_passed_to_the_post_emit_functions()
-    local post_emit = function (arg)
+    local post_emit = function (name, arg)
                           assert_nil(arg)
                           call_counter = call_counter + 1
                       end
@@ -838,8 +836,9 @@ end
 
 
 function test_after_being_removed_a_post_emit_function_wont_be_called_anymore()
+    local offset = 0
     local post_emit1 = function (name)
-                  assert_equal(0, call_counter)
+                  assert_equal(2 - offset, call_counter)
                   call_counter = call_counter + 1
                end
 
@@ -848,9 +847,8 @@ function test_after_being_removed_a_post_emit_function_wont_be_called_anymore()
                   call_counter = call_counter + 1
                end
 
-    local offset = 0
     local post_emit3 = function (name)
-                  assert_equal(2 - offset, call_counter)
+                  assert_equal(0, call_counter)
                   call_counter = call_counter + 1
                end
 
@@ -1318,6 +1316,5 @@ function test_on_a_subevent_emission_only_handlers_from_the_parents_are_called_n
     event.emit("luanotify:event")
     assert_equal(2, call_counter)
 end
-
 
 lunit.main()
