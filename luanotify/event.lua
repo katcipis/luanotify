@@ -20,10 +20,14 @@
 -- You should have received a copy of the GNU Lesser General Public License
 -- along with LuaNotify.  If not, see <http://www.gnu.org/licenses/>.
 ---------------------------------------------------------------------------------
+
+---
+-- Module that defines the Event object.
 module(..., package.seeall)
 
 local set = require "luanotify.ordered_set" 
 local separator = ":"
+
 
 -----------------------------------------------------
 -- Class attributes and methods goes on this table --
