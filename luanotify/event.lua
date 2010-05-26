@@ -149,7 +149,7 @@ end
 --------------------------
 -- Constructor function --
 --------------------------
-local function new()
+function new()
     local object = {}
     -- set the metatable of the new object as the Signal_mt table (inherits Signal).
     setmetatable(object, Event_mt)
@@ -266,3 +266,11 @@ function Event:clear(event_name)
     self.events = {} 
 end
 
+----------------------
+-- Public functions --
+----------------------
+local global_event = new()
+
+function get_global_event()
+   return global_event 
+end
