@@ -23,17 +23,22 @@
 module(..., package.seeall)
 
 local set = require "luanotify.ordered_set" 
-
 local separator = ":"
-local stopped   = false
 
----------------------------------------
--- Internal data (registered events) --
----------------------------------------
-local events = {}
+-----------------------------------------------------
+-- Class attributes and methods goes on this table --
+-----------------------------------------------------
+local Event = {}
+
+
+------------------------------------
+-- Metamethods goes on this table --
+------------------------------------
+local Event_mt = { __index = Event, __metatable = "protected" }
+
 
 ---------------------------------
--- Private functions definition --
+-- Private methods definition --
 ---------------------------------
 local function new_node()
     return { handlers   = set.new(),
@@ -53,11 +58,11 @@ local function get_nodes_names(event_name)
 end
 
 
-local function get_node(event_name)
+local function get_node(self, event_name)
     local events_names = get_nodes_names(event_name)
-    local current_node = events[events_names[1]] or new_node()
+    local current_node = self.events[events_names[1]] or new_node()
 
-    events[events_names[1]] = current_node
+    self.events[events_names[1]] = current_node
     for i=2, #events_names do
         sub_node = current_node.subevents[events_names[i]] or new_node()
         current_node.subevents[events_names[i]] = sub_node
@@ -67,9 +72,9 @@ local function get_node(event_name)
 end
 
 
-local function unused_event(event_name)
+local function unused_event(self, event_name)
     local events_names = get_nodes_names(event_name)
-    local current_node = events[events_names[1]] 
+    local current_node = self.events[events_names[1]] 
 
     if not current_node then return true end
 
@@ -82,10 +87,10 @@ local function unused_event(event_name)
     return false
 end
 
-local function event_iterator(event_name)
+local function event_iterator(self, event_name)
     local events_names = get_nodes_names(event_name)
     local i = 2
-    local current_node = events[events_names[1]]
+    local current_node = self.events[events_names[1]]
 
     local function iterator() 
         if not current_node then return end
@@ -104,11 +109,12 @@ local function event_iterator(event_name)
     return iterator
 end
 
-local function call_pre_emits(event_name)
+
+local function call_pre_emits(self, event_name)
     local nodes = set.new()
     local reversed_nodes = set.new()
 
-    for node in event_iterator(event_name) do
+    for node in event_iterator(self, event_name) do
         for pre_emit in node.pre_emits:get_iterator() do pre_emit(event_name) end
         nodes:push_back(node)
         reversed_nodes:push_front(node)
@@ -117,16 +123,18 @@ local function call_pre_emits(event_name)
     return nodes, reversed_nodes
 end
 
+
 local function call_post_emits(event_name, reversed_nodes)
     for node in reversed_nodes:get_iterator() do
         for post_emit in node.post_emits:get_iterator() do post_emit(event_name) end
     end
 end
 
-local function call_handlers(params)
+
+local function call_handlers(self, params)
     for node in params.nodes:get_iterator() do
         for handler in node.handlers:get_iterator() do
-            if(stopped) then return end
+            if(self.stopped) then return end
             if(node.blocked_handlers[handler] == 0) then
                 if(params.accumulator) then
                     params.accumulator(handler(params.event_name, unpack(params.args)))
@@ -138,17 +146,30 @@ local function call_handlers(params)
     end
 end
 
+--------------------------
+-- Constructor function --
+--------------------------
+local function new()
+    local object = {}
+    -- set the metatable of the new object as the Signal_mt table (inherits Signal).
+    setmetatable(object, Event_mt)
 
----------------------------------
--- Public functions definition --
----------------------------------
+    -- create all the instance state data.
+    object.stopped = false
+    object.events  = {}
+    return object
+end
 
-function connect(event_name, handler_function)
+
+----------------------------------
+-- Class definition and methods --
+----------------------------------
+function Event:connect(event_name, handler_function)
     if (type(handler_function) ~= "function") then
         error("connect: expected a function, got a "..type(handler_function));
     end
 
-    local node = get_node(event_name)
+    local node = get_node(self, event_name)
     node.handlers:push_back(handler_function)
 
     if not node.blocked_handlers[handler_function] then
@@ -156,26 +177,31 @@ function connect(event_name, handler_function)
     end
 end
 
-function disconnect(event_name, handler_function)
-    if unused_event(event_name) then return end
 
-    local node = get_node(event_name)
+function Event:disconnect(event_name, handler_function)
+    if unused_event(self, event_name) then return end
+
+    local node = get_node(self, event_name)
     node.handlers:remove(handler_function)
     node.blocked_handlers[handler_function] = nil
 end
 
-function block(event_name, handler_function)
-    if unused_event(event_name) then return end
-    local node = get_node(event_name)
+
+function Event:block(event_name, handler_function)
+    if unused_event(self, event_name) then return end
+
+    local node = get_node(self, event_name)
     local block = node.blocked_handlers[handler_function]
     if block then
         node.blocked_handlers[handler_function] = block + 1
     end
 end
 
-function unblock(event_name, handler_function)
-    if unused_event(event_name) then return end
-    local node = get_node(event_name)
+
+function Event:unblock(event_name, handler_function)
+    if unused_event(self, event_name) then return end
+
+    local node = get_node(self, event_name)
     if node.blocked_handlers[handler_function] and 
        node.blocked_handlers[handler_function] > 0 then
 
@@ -183,51 +209,60 @@ function unblock(event_name, handler_function)
     end
 end
 
-function emit(event_name, ...)
-    stopped = false
-    local nodes, reversed_nodes = call_pre_emits(event_name)
-    call_handlers({event_name=event_name, nodes=nodes, args={...}})
+
+function Event:emit(event_name, ...)
+    self.stopped = false
+    local nodes, reversed_nodes = call_pre_emits(self, event_name)
+    call_handlers(self, {event_name=event_name, nodes=nodes, args={...}})
     call_post_emits(event_name, reversed_nodes)
 end
 
-function emit_with_accumulator(event_name, accumulator, ...)
+
+function Event:emit_with_accumulator(event_name, accumulator, ...)
     if (type(accumulator) ~= "function") then
         error("emit_with_accumulator: expected a function, got a "..type(accumulator));
     end
-    stopped = false
-    local nodes, reversed_nodes = call_pre_emits(event_name)
-    call_handlers{event_name=event_name, nodes=nodes, accumulator=accumulator, args={...}}
+    self.stopped = false
+    local nodes, reversed_nodes = call_pre_emits(self, event_name)
+    call_handlers(self, {event_name=event_name, nodes=nodes, accumulator=accumulator, args={...}})
     call_post_emits(event_name, reversed_nodes)
 end
 
-function add_pre_emit(event_name, pre_emit_func)
+
+function Event:add_pre_emit(event_name, pre_emit_func)
     if (type(pre_emit_func) ~= "function") then
         error("add_pre_emit: expected a function, got a "..type(pre_emit_func));
     end
-    get_node(event_name).pre_emits:push_back(pre_emit_func)
+    get_node(self, event_name).pre_emits:push_back(pre_emit_func)
 end
 
-function remove_pre_emit(event_name, pre_emit_func)
-    if unused_event(event_name) then return end
-    get_node(event_name).pre_emits:remove(pre_emit_func)    
+
+function Event:remove_pre_emit(event_name, pre_emit_func)
+    if unused_event(self, event_name) then return end
+    get_node(self, event_name).pre_emits:remove(pre_emit_func)    
 end
 
-function add_post_emit(event_name, post_emit_func)
+
+function Event:add_post_emit(event_name, post_emit_func)
     if (type(post_emit_func) ~= "function") then
         error("add_pre_emit: expected a function, got a "..type(post_emit_func));
     end 
-    get_node(event_name).post_emits:push_front(post_emit_func)
+    get_node(self, event_name).post_emits:push_front(post_emit_func)
 end
 
-function remove_post_emit(event_name, post_emit_func)
-    if unused_event(event_name) then return end
-    get_node(event_name).post_emits:remove(post_emit_func)
+
+function Event:remove_post_emit(event_name, post_emit_func)
+    if unused_event(self, event_name) then return end
+    get_node(self, event_name).post_emits:remove(post_emit_func)
 end
 
-function stop()
-    stopped = true
+
+function Event:stop()
+    self.stopped = true
 end
 
-function clear(event_name)
-    events = {} 
+
+function Event:clear(event_name)
+    self.events = {} 
 end
+
