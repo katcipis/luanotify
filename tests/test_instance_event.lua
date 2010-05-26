@@ -1,8 +1,10 @@
 --------------------------------------------------------------------------------
 
+-- Copyright (C) 2010 Guilherme Silveira <xguiga@gmail.com>
 -- Copyright (C) 2010 Tiago Katcipis <tiagokatcipis@gmail.com>
 -- Copyright (C) 2010 Paulo Pizarro  <paulo.pizarro@gmail.com>
 
+-- @author Guilherme Silveira  <xguiga@gmail.com>
 -- @author Paulo Pizarro  <paulo.pizarro@gmail.com>
 -- @author Tiago Katcipis <tiagokatcipis@gmail.com>
  
