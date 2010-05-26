@@ -1130,7 +1130,7 @@ function test_after_a_stop_no_more_handlers_are_called_on_that_emission()
     local handler2 = function (name)
                          assert_equal(1, call_counter)
                          call_counter = call_counter + 1
-                         event.stop()
+                         event:stop()
                      end
 
     local handler3 = function (name)
@@ -1151,7 +1151,7 @@ function test_emission_can_be_stopped_inside_a_handler()
     local handler1 = function (name)
                          assert_equal(0, call_counter)
                          call_counter = call_counter + 1
-                         event.stop()
+                         event:stop()
                      end
 
     local handler2 = function (name)
@@ -1171,7 +1171,7 @@ function test_emission_can_be_stopped_inside_any_handler_on_the_emitted_event_br
     local handler1 = function (name)
                          assert_equal(0, call_counter)
                          call_counter = call_counter + 1
-                         event.stop()
+                         event:stop()
                      end
 
     local handler2 = function (name)
@@ -1191,7 +1191,7 @@ function test_emission_can_be_stopped_inside_a_pre_emit()
     local pre_emit = function (name)
                          assert_equal(0, call_counter)
                          call_counter = call_counter + 1
-                         event.stop()
+                         event:stop()
                      end
 
     local handler1 = function (name)
@@ -1219,7 +1219,7 @@ function test_emission_can_be_stopped_inside_a_accumulator()
                      end
 
     local accumulator = function ()
-                            event.stop()
+                            event:stop()
                         end
 
     event:connect("luanotify:event", handler1)
@@ -1233,7 +1233,7 @@ function test_stopping_will_not_stop_the_pre_emit_functions()
     local pre_emit1 = function (name)
                         assert_equal(0, call_counter)
                         call_counter = call_counter + 1
-                        event.stop()
+                        event:stop()
                     end
 
     local pre_emit2 = function (name)
@@ -1263,7 +1263,7 @@ function test_stopping_will_not_stop_the_post_emit_functions()
     local handler1 = function (name)
                          assert_equal(0, call_counter)
                          call_counter = call_counter + 1
-                         event.stop()
+                         event:stop()
                      end
 
     local handler2 = function (name)
