@@ -19,12 +19,14 @@ References
 ----------
 
 Project website:
-- http://wiki.github.com/katcipis/Luanotify 
+- http://wiki.github.com/katcipis/luanotify 
 
 Version control repositories:
-- http://github.com/katcipis/Luanotify.git
-  git://github.com/katcipis/Luanotify.git
+- git://github.com/katcipis/luanotify.git
 
+Mailing list:
+- luanotify-devel@lists.sourceforge.net
+- https://lists.sourceforge.net/lists/listinfo/luanotify-devel
 
 Licensing
 ---------
