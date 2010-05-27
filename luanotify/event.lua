@@ -38,7 +38,7 @@ local Event = {}
 ------------------------------------
 -- Metamethods goes on this table --
 ------------------------------------
-local Event_mt = { __index = Event, __metatable = "protected" }
+local Event_mt = { __index = Event }
 
 
 ---------------------------------

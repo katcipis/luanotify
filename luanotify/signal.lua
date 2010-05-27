@@ -33,7 +33,7 @@ local Signal = {}
 ------------------------------------
 -- Metamethods goes on this table --
 ------------------------------------
-local Signal_mt = { __index = Signal, __metatable = "protected" }
+local Signal_mt = { __index = Signal }
 
 
 --------------------------

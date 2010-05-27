@@ -30,7 +30,7 @@ local OrderedSet = {}
 ------------------------------------
 -- Metamethods goes on this table --
 ------------------------------------
-local OrderedSet_mt = { __index = OrderedSet, __metatable = "protected" }
+local OrderedSet_mt = { __index = OrderedSet }
 
 
 --------------------------
