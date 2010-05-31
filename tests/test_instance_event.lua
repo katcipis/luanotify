@@ -206,6 +206,22 @@ function test_the_same_handler_function_can_be_connected_to_different_events()
 end
 
 
+function test_the_differente_handler_function_can_be_connected_to_different_events_and_they_are_called_just_one_time()
+    local handler = function (name) call_counter = call_counter + 1 end
+    local handler2 = function (name) call_counter = call_counter + 1 end
+    local event2 = luanotify.event.new()
+
+    event:connect("luanotify:event:test1", handler)
+    event2:connect("luanotify:event:test1", handler2)
+
+    assert_equal(0, call_counter)
+    event:emit("luanotify:event:test1")
+    assert_equal(1, call_counter)
+    event2:emit("luanotify:event:test1")
+    assert_equal(2, call_counter)
+end
+
+
 function test_if_the_same_handler_is_connected_multiple_times_to_the_same_event_it_has_to_be_disconnected_only_once()
     local handler = function (name)
                   call_counter = call_counter + 1
