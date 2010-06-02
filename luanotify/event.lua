@@ -2,8 +2,8 @@
 -- Copyright (C) 2010 Tiago Katcipis <tiagokatcipis@gmail.com>
 -- Copyright (C) 2010 Paulo Pizarro  <paulo.pizarro@gmail.com>
 -- 
--- @author Paulo Pizarro  <paulo.pizarro@gmail.com>
--- @author Tiago Katcipis <tiagokatcipis@gmail.com>
+-- Paulo Pizarro  <paulo.pizarro@gmail.com>
+-- Tiago Katcipis <tiagokatcipis@gmail.com>
 
 -- This file is part of LuaNotify.
 
@@ -22,7 +22,13 @@
 ---------------------------------------------------------------------------------
 
 ---
--- Module that defines the Event object.
+-- @class module
+-- @name event
+-- @description Event Class.
+-- @author <a href="mailto:tiagokatcipis@gmail.com">Tiago Katcipis</a>
+-- @author <a href="mailto:paulo.pizarro@gmail.com">Paulo Pizarro</a>
+-- @copyright 2010 Tiago Katcipis, Paulo Pizarro.
+
 module(..., package.seeall)
 
 local set = require "luanotify.ordered_set" 

@@ -2,8 +2,8 @@
 -- Copyright (C) 2010 Tiago Katcipis <tiagokatcipis@gmail.com>
 -- Copyright (C) 2010 Paulo Pizarro  <paulo.pizarro@gmail.com>
 -- 
--- @author Paulo Pizarro  <paulo.pizarro@gmail.com>
--- @author Tiago Katcipis <tiagokatcipis@gmail.com>
+-- author Paulo Pizarro  <paulo.pizarro@gmail.com>
+-- author Tiago Katcipis <tiagokatcipis@gmail.com>
  
 -- This file is part of LuaNotify.
  
@@ -20,6 +20,15 @@
 -- You should have received a copy of the GNU Lesser General Public License
 -- along with LuaNotify.  If not, see <http://www.gnu.org/licenses/>.
 ---------------------------------------------------------------------------------
+
+---
+-- @class module
+-- @name signal
+-- @description Signal Class.
+-- @author <a href="mailto:tiagokatcipis@gmail.com">Tiago Katcipis</a>
+-- @author <a href="mailto:paulo.pizarro@gmail.com">Paulo Pizarro</a>
+-- @copyright 2010 Tiago Katcipis, Paulo Pizarro.
+
 module(..., package.seeall)
 
 require "luanotify.ordered_set"
