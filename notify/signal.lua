@@ -31,7 +31,7 @@
 
 module(..., package.seeall)
 
-require "luanotify.ordered_set"
+local set = require "notify.ordered_set"
 
 -----------------------------------------------------
 -- Class attributes and methods goes on this table --
@@ -55,9 +55,9 @@ function new ()
 
     -- create all the instance state data.
     object.handlers_block  = {}
-    object.handlers        = luanotify.ordered_set.new()
-    object.pre_emit_funcs  = luanotify.ordered_set.new()
-    object.post_emit_funcs = luanotify.ordered_set.new()
+    object.handlers        = set.new()
+    object.pre_emit_funcs  = set.new()
+    object.post_emit_funcs = set.new()
     object.signal_stopped = false
     return object
 end

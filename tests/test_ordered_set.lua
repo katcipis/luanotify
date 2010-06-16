@@ -19,14 +19,14 @@
 -- You should have received a copy of the GNU Lesser General Public License
 -- along with LuaNotify.  If not, see <http://www.gnu.org/licenses/>.
 ---------------------------------------------------------------------------------
-
 require "lunit"
-require "luanotify.ordered_set"
+require "notify.ordered_set"
 
 module("ordered_set_testcase", lunit.testcase, package.seeall)
 
+
 function setUp()
-    ordered_set = luanotify.ordered_set.new()
+    ordered_set = notify.ordered_set.new()
 end
 
 function tearDown()

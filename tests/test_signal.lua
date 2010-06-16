@@ -23,12 +23,14 @@
 ---------------------------------------------------------------------------------
 
 require "lunit"
-require "luanotify.signal"
 
 module("signal_testcase", lunit.testcase, package.seeall)
 
+local signal_module = require "notify.signal"
+
+
 function setUp()
-    signal = luanotify.signal.new()
+    signal = signal_module.new()
     call_counter = 0
 end
 
@@ -141,7 +143,7 @@ end
 
 function test_the_same_handler_can_be_connected_on_multiple_signals()
     local handler = function () call_counter = call_counter + 1 end
-    local signal2 = luanotify.signal.new()
+    local signal2 = signal_module.new()
     
     signal:connect(handler)
     signal2:connect(handler)
@@ -331,7 +333,7 @@ end
 
 function test_the_same_pre_emit_can_be_added_on_multiple_signals()
     local pre_emit = function () call_counter = call_counter + 1 end
-    local signal2 = luanotify.signal.new()
+    local signal2 = signal_module.new()
 
     signal:add_pre_emit(pre_emit)
     signal2:add_pre_emit(pre_emit)
@@ -532,7 +534,7 @@ end
 
 function test_the_same_post_emit_can_be_added_on_multiple_signals()
     local post_emit = function () call_counter = call_counter + 1 end
-    local signal2 = luanotify.signal.new()
+    local signal2 = signal_module.new()
 
     signal:add_post_emit(post_emit)
     signal2:add_post_emit(post_emit)

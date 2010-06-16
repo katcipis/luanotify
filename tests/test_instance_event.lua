@@ -25,13 +25,14 @@
 ---------------------------------------------------------------------------------
 
 require "lunit"
-require "luanotify.event"
-local event = nil
 
 module("event_testcase", lunit.testcase, package.seeall)
 
+local event_module = require "notify.event"
+local event = nil
+
 function setUp()
-    event = luanotify.event.new()
+    event = event_module.new()
     call_counter = 0
 end
 
@@ -193,7 +194,7 @@ end
 
 function test_the_same_handler_function_can_be_connected_to_different_events()
     local handler = function (name) call_counter = call_counter + 1 end
-    local event2 = luanotify.event.new()
+    local event2 = event_module.new()
 
     event:connect("luanotify:event:test1", handler)
     event2:connect("luanotify:event:test1", handler)
@@ -209,7 +210,7 @@ end
 function test_the_differente_handler_function_can_be_connected_to_different_events_and_they_are_called_just_one_time()
     local handler = function (name) call_counter = call_counter + 1 end
     local handler2 = function (name) call_counter = call_counter + 1 end
-    local event2 = luanotify.event.new()
+    local event2 = event_module.new()
 
     event:connect("luanotify:event:test1", handler)
     event2:connect("luanotify:event:test1", handler2)

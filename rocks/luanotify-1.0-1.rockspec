@@ -20,8 +20,9 @@ dependencies = {
 build = {
    type = "builtin",
    modules = {
-      ["luanotify.event"]  = "luanotify/event.lua",
-      ["luanotify.signal"] = "luanotify/signal.lua"
+      ["notify.ordered_set"] = "notify/ordered_set.lua",
+      ["notify.event"]       = "notify/event.lua",
+      ["notify.signal"]      = "notify/signal.lua"
    }
 }
 

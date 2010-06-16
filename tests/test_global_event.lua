@@ -23,21 +23,20 @@
 -- You should have received a copy of the GNU Lesser General Public License
 -- along with LuaNotify.  If not, see <http://www.gnu.org/licenses/>.
 ---------------------------------------------------------------------------------
-
 require "lunit"
-require "luanotify.event"
-local event = nil
 
 module("event_testcase", lunit.testcase, package.seeall)
 
+local event_module = require "notify.event"
+local event = event_module.get_global_event()
+
+
 function setUp()
-    event = luanotify.event.get_global_event()
     call_counter = 0
 end
 
 function tearDown()
     event:clear()
-    event = nil
 end
 
 function test_if_a_handler_function_is_connected_to_a_event_it_will_always_be_called_when_that_event_emission_occurs()

@@ -31,7 +31,7 @@
 
 module(..., package.seeall)
 
-local set = require "luanotify.ordered_set" 
+local set = require "notify.ordered_set" 
 local separator = ":"
 
 
