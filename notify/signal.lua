@@ -31,7 +31,7 @@
 
 module(..., package.seeall)
 
-local set = require "notify.ordered_set"
+local queue = require "notify.double_queue"
 
 -----------------------------------------------------
 -- Class attributes and methods goes on this table --
@@ -55,9 +55,9 @@ function new ()
 
     -- create all the instance state data.
     object.handlers_block  = {}
-    object.handlers        = set.new()
-    object.pre_emit_funcs  = set.new()
-    object.post_emit_funcs = set.new()
+    object.handlers        = queue.new()
+    object.pre_emit_funcs  = queue.new()
+    object.post_emit_funcs = queue.new()
     object.signal_stopped = false
     return object
 end

@@ -31,7 +31,7 @@
 
 module(..., package.seeall)
 
-local set = require "notify.ordered_set" 
+local queue = require "notify.double_queue" 
 local separator = ":"
 
 
@@ -51,9 +51,9 @@ local Event_mt = { __index = Event }
 -- Private methods definition --
 ---------------------------------
 local function new_node()
-    return { handlers   = set.new(),
-             pre_emits  = set.new(),
-             post_emits = set.new(),
+    return { handlers   = queue.new(),
+             pre_emits  = queue.new(),
+             post_emits = queue.new(),
              blocked_handlers = {}, 
              subevents  = {} } 
 end
@@ -121,8 +121,8 @@ end
 
 
 local function call_pre_emits(self, event_name)
-    local nodes = set.new()
-    local reversed_nodes = set.new()
+    local nodes = queue.new()
+    local reversed_nodes = queue.new()
 
     for node in event_iterator(self, event_name) do
         for pre_emit in node.pre_emits:get_iterator() do pre_emit(event_name) end

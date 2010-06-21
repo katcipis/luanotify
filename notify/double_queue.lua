@@ -24,7 +24,7 @@
 ---
 -- @class module
 -- @name ordered_set
--- @description OrderedSet Class.
+-- @description DoubleQueue Class.
 -- @author <a href="mailto:tiagokatcipis@gmail.com">Tiago Katcipis</a>
 -- @author <a href="mailto:paulo.pizarro@gmail.com">Paulo Pizarro</a>
 -- @copyright 2010 Tiago Katcipis, Paulo Pizarro.
@@ -34,12 +34,12 @@ module(..., package.seeall)
 -----------------------------------------------------
 -- Class attributes and methods goes on this table --
 -----------------------------------------------------
-local OrderedSet = {}
+local DoubleQueue = {}
 
 ------------------------------------
 -- Metamethods goes on this table --
 ------------------------------------
-local OrderedSet_mt = { __index = OrderedSet }
+local DoubleQueue_mt = { __index = DoubleQueue }
 
 
 --------------------------
@@ -48,8 +48,8 @@ local OrderedSet_mt = { __index = OrderedSet }
 
 function new ()
     local object = {}
-    -- set the metatable of the new object as the OrderedSet_mt table (inherits OrderedSet).
-    setmetatable(object, OrderedSet_mt)
+    -- set the metatable of the new object as the DoubleQueue_mt table (inherits DoubleQueue).
+    setmetatable(object, DoubleQueue_mt)
 
     -- create all the instance state data.
     object.data          = {}
@@ -75,11 +75,11 @@ end
 --------------------------
 -- Class public methods --
 --------------------------
-function OrderedSet:is_empty()
+function DoubleQueue:is_empty()
     return self.first > self.last
 end
 
-function OrderedSet:push_front(data)
+function DoubleQueue:push_front(data)
     if(self.data_position[data]) then
         return
     end
@@ -88,7 +88,7 @@ function OrderedSet:push_front(data)
     self.data_position[data] = self.first
 end
 
-function OrderedSet:push_back(data)
+function DoubleQueue:push_back(data)
     if(self.data_position[data]) then
         return
     end
@@ -97,7 +97,7 @@ function OrderedSet:push_back(data)
     self.data_position[data] = self.last
 end
 
-function OrderedSet:get_iterator()
+function DoubleQueue:get_iterator()
     local first = self.first
     local function iterator()
         while(first <= self.last) do
@@ -111,7 +111,7 @@ function OrderedSet:get_iterator()
     return iterator
 end
 
-function OrderedSet:remove(data)
+function DoubleQueue:remove(data)
     if(not self.data_position[data]) then
         return 
     end
