@@ -467,4 +467,39 @@ function test_after_it_gets_empty_it_can_be_used_again()
     end
 end
 
+function test_if_you_set_queue_to_nil_the_iterator_keep_working()
+    for i=1,100 do
+        double_queue:push_back("item b"..i)
+        double_queue:push_front("item f"..i)
+    end
+
+    for data in double_queue:get_iterator() do
+        double_queue = nil
+        assert_not_nil(data)
+        collectgarbage("collect")
+    end
+end
+
+function test_if_you_set_nested_queue_to_nil_the_iterator_of_nested_queue_keep_working()
+    for i=1,10 do
+        local queue = notify.double_queue.new()
+        for j=1,100 do
+            queue:push_back("item b"..i)
+            queue:push_front("item f"..i)
+        end 
+        double_queue:push_back(queue)
+    end
+
+    for queue in double_queue:get_iterator() do
+        double_queue = nil
+        assert_not_nil(queue)
+        for data in queue:get_iterator() do
+            queue = nil
+            assert_not_nil(data)
+            collectgarbage("collect")
+        end
+    end
+end
+
+
 lunit.main()
