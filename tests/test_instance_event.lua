@@ -1328,6 +1328,43 @@ function test_on_a_subevent_emission_the_handlers_on_the_subevent_branch_are_cal
 end
 
 
+function test_setting_the_event_instance_to_nil_does_not_stop_event_emission()
+    local evt = event_module.new()
+ 
+    local handler1 = function (name)
+                         assert_equal(0, call_counter)
+                         assert_nil(evt)
+                         call_counter = call_counter + 1
+                         collectgarbage("collect")
+                     end
+
+    local handler2 = function (name)
+                         assert_equal(1, call_counter)
+                         assert_nil(evt)
+                         call_counter = call_counter + 1
+                         collectgarbage("collect")
+                     end
+
+    local handler3 = function (name)
+                         assert_equal(2, call_counter)
+                         assert_nil(evt)
+                         call_counter = call_counter + 1
+                         collectgarbage("collect")
+                     end
+
+    evt:add_pre_emit("luanotify", function() evt = nil 
+                                             collectgarbage("collect") 
+                                  end )
+
+    evt:connect("luanotify", handler1)
+    evt:connect("luanotify", handler2)
+    evt:connect("luanotify", handler3)
+    evt:emit("luanotify")
+
+    assert_equal(3, call_counter)
+    assert_nil(evt)
+end
+
 function test_on_a_subevent_emission_only_handlers_from_the_parents_are_called_not_from_child_events()
     local handler = function (name) call_counter = call_counter + 1 end
 

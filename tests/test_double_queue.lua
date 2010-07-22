@@ -501,5 +501,4 @@ function test_if_you_set_nested_queue_to_nil_the_iterator_of_nested_queue_keep_w
     end
 end
 
-
 lunit.main()
