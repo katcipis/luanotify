@@ -29,7 +29,9 @@
 -- @author <a href="mailto:paulo.pizarro@gmail.com">Paulo Pizarro</a>
 -- @copyright 2010 Tiago Katcipis, Paulo Pizarro.
 
-module(..., package.seeall)
+local setmetatable = setmetatable
+
+module(...)
 
 -----------------------------------------------------
 -- Class attributes and methods goes on this table --

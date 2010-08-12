@@ -29,7 +29,13 @@
 -- @author <a href="mailto:paulo.pizarro@gmail.com">Paulo Pizarro</a>
 -- @copyright 2010 Tiago Katcipis, Paulo Pizarro.
 
-module(..., package.seeall)
+local require = require
+local setmetatable = setmetatable
+local string = string
+local error  = error
+local unpack = unpack
+
+module(...)
 
 local queue = require "notify.double_queue" 
 local separator = ":"
@@ -184,10 +190,6 @@ end
 -- @param event_name       - The event name (eg: mouse::click or just mouse). 
 -- @param handler_function - The function that will be called when the event_name is emitted.
 function Event:connect(event_name, handler_function)
-    if (type(handler_function) ~= "function") then
-        error("connect: expected a function, got a "..type(handler_function));
-    end
-
     local node = get_node(self, event_name)
     node.handlers:push_back(handler_function)
 
@@ -270,9 +272,6 @@ end
 -- @param ...         - A optional list of parameters, they will be repassed to the handler 
 --                      functions connected to this signal.
 function Event:emit_with_accumulator(event_name, accumulator, ...)
-    if (not (type(accumulator) == "function" or type(accumulator) == "table")) then
-        error("emit_with_accumulator: expected a function or a table, got a "..type(accumulator));
-    end
     self.stopped = false
     local nodes, reversed_nodes = call_pre_emits(self, event_name)
     call_handlers(self, {event_name=event_name, nodes=nodes, accumulator=accumulator, args={...}})
@@ -294,9 +293,6 @@ end
 -- @param event_name    - The event name (eg: mouse::click or just mouse).
 -- @param pre_emit_func - The pre_emit function.
 function Event:add_pre_emit(event_name, pre_emit_func)
-    if (type(pre_emit_func) ~= "function") then
-        error("add_pre_emit: expected a function, got a "..type(pre_emit_func));
-    end
     get_node(self, event_name).pre_emits:push_back(pre_emit_func)
 end
 
@@ -325,9 +321,6 @@ end
 -- @param event_name - The event name (eg: mouse::click or just mouse). 
 -- @param post_emit_func - The post_emit function.
 function Event:add_post_emit(event_name, post_emit_func)
-    if (type(post_emit_func) ~= "function") then
-        error("add_pre_emit: expected a function, got a "..type(post_emit_func));
-    end 
     get_node(self, event_name).post_emits:push_front(post_emit_func)
 end
 

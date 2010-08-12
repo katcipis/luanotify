@@ -66,12 +66,6 @@ function test_you_can_have_one_handler_connected_only_on_a_subevent()
 end
 
 
-function test_an_error_is_generated_if_you_connect_a_handler_that_is_not_a_function()
-    local handler = "not a function"
-    assert_error("connect: expected a function, got a "..type(handler), function () event:connect("test", handler) end)
-end
-
-
 function test_if_there_is_no_handler_connected_to_an_event_the_emission_of_the_event_does_nothing()
     assert_equal(0, call_counter)
     event:emit("luanotify")
@@ -511,12 +505,6 @@ function test_a_handler_must_be_unblocked_the_same_times_and_on_the_same_event_i
 end
 
 
-function test_an_error_is_generated_if_you_add_a_pre_emit_that_is_not_a_function()
-    local pre_emit = "not a function"
-    assert_error("add_pre_emit: expected a function, got a "..type(pre_emit), function () event:add_pre_emit("test", pre_emit) end)
-end
-
-
 function test_pre_emit_functions_are_always_called_before_the_handlers_of_the_event()
     local handler1 = function (name)
                   assert_equal(0, call_counter)
@@ -746,12 +734,6 @@ function test_after_being_removed_a_pre_emit_function_wont_be_called_anymore()
     event:remove_pre_emit("luanotify:event", pre_emit2)
     offset = 1; call_counter = 0
     event:emit("luanotify:event")
-end
-
-
-function test_an_error_is_generated_if_you_add_a_post_emit_that_is_not_a_function()
-    local post_emit = "not a function"
-    assert_error("add_post_emit: expected a function, got a "..type(post_emit), function () event:add_post_emit(post_emit) end)
 end
 
 
@@ -989,12 +971,6 @@ function test_if_you_remove_a_post_emit_that_has_not_been_added_nothing_happens(
                        end
 
     event:remove_post_emit("luanotify:event", post_emit)
-end
-
-
-function test_if_the_accumulator_is_not_a_function_gives_out_a_error()
-    local accumulator = "not a function"
-    assert_error("emit_with_accumulator: expected a function, got a "..type(accumulator), function () event:emit_with_accumulator("luanotify", accumulator) end)
 end
 
 

@@ -52,12 +52,6 @@ function test_if_a_handler_function_is_connected_it_will_always_be_called_when_a
 end
 
 
-function test_an_error_is_generated_if_you_connect_a_handler_that_is_not_a_function()
-    local handler = "not a function"
-    assert_error("connect: expected a function, got a "..type(handler), function () signal:connect(handler) end)
-end
-
-
 function test_if_there_is_no_handler_connected_emission_does_nothing()
     assert_equal(0, call_counter)
     signal:emit()
@@ -303,12 +297,6 @@ function test_a_handler_must_be_unblocked_the_same_times_it_has_been_blocked()
 end
 
 
-function test_an_error_is_generated_if_you_add_a_pre_emit_that_is_not_a_function()
-    local pre_emit = "not a function"
-    assert_error("add_pre_emit: expected a function, got a "..type(pre_emit), function () signal:add_pre_emit(pre_emit) end)
-end
-
-
 function test_pre_emit_functions_are_always_called_before_the_handlers()
     handler1 = function ()
                   assert_equal(0, call_counter)
@@ -499,12 +487,6 @@ function test_after_being_removed_a_pre_emit_function_wont_be_called_anymore()
     signal:remove_pre_emit(pre_emit2)
     offset = 1; call_counter = 0
     signal:emit()
-end
-
-
-function test_an_error_is_generated_if_you_add_a_post_emit_that_is_not_a_function()
-    local post_emit = "not a function"
-    assert_error("add_post_emit: expected a function, got a "..type(post_emit), function () signal:add_post_emit(post_emit) end)
 end
 
 
@@ -710,19 +692,6 @@ function test_if_you_remove_a_post_emit_that_does_not_exist_nothing_happens()
     signal:remove_post_emit(post_emit)
 end
 
-
-function test_if_the_accumulator_is_not_function_an_error_is_raised()
-    local handler = function ()
-                        assert_equal(0, call_counter)
-                        call_counter = call_counter + 1
-                        return call_counter
-                    end
-
-    signal:connect(handler)
-    assert_error("emit_with_accumulator: expected a function, got a "..type(nil), function () signal:emit_with_accumulator() end)
-    assert_error("emit_with_accumulator: expected a function, got a "..type(5), function () signal:emit_with_accumulator(5) end)
-    assert_error("emit_with_accumulator: expected a function, got a "..type("error"), function () signal:emit_with_accumulator("error") end)
-end
 
 function test_the_return_value_of_each_handler_is_passed_to_the_accumulator()
     local handler1 = function ()

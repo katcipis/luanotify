@@ -29,7 +29,10 @@
 -- @author <a href="mailto:paulo.pizarro@gmail.com">Paulo Pizarro</a>
 -- @copyright 2010 Tiago Katcipis, Paulo Pizarro.
 
-module(..., package.seeall)
+local require = require
+local setmetatable = setmetatable
+
+module(...)
 
 local queue = require "notify.double_queue"
 
@@ -82,10 +85,6 @@ end
 -- when the signal is emitted with a FIFO  behaviour (The first connected will be the first called).
 -- @param handler_function – The function that will be called when this signal is emitted.
 function Signal:connect(handler_function)
-    if (type(handler_function) ~= "function") then
-        error("connect: expected a function, got a "..type(handler_function));
-    end
-
     if(not self.handlers_block[handler_function]) then
         self.handlers_block[handler_function] = 0
         self.handlers:push_back(handler_function)
@@ -149,10 +148,6 @@ end
 -- @param accumulator – Function that will accumulate handlers results.
 -- @param … – A optional list of parameters, they will be repassed to the handler functions connected to this signal.
 function Signal:emit_with_accumulator(accumulator, ...)
-    if (type(accumulator) ~= "function") then
-        error("emit_with_accumulator: expected a function, got a "..type(accumulator));
-    end
-
     self.signal_stopped = false;
 
     for set_up in self.pre_emit_funcs:get_iterator() do set_up() end
@@ -178,9 +173,6 @@ end
 -- inside the handler function. They are called on a queue (FIFO) policy based on the order they added.
 -- @param pre_emit_func – The pre_emit function.
 function Signal:add_pre_emit(pre_emit_func)
-    if (type(pre_emit_func) ~= "function") then
-        error("add_pre_emit: expected a function, got a "..type(pre_emit_func));
-    end
     self.pre_emit_funcs:push_back(pre_emit_func)
 end
 
@@ -204,9 +196,6 @@ end
 -- can be shared by multiple handlers. They are called on a stack (LIFO) policy based on the order they added.
 -- @param post_emit_func – The post_emit function.
 function Signal:add_post_emit(post_emit_func)
-    if (type(post_emit_func) ~= "function") then
-        error("add_post_emit: expected a function, got a "..type(post_emit_func));
-    end
     self.post_emit_funcs:push_front(post_emit_func)
 end
 
