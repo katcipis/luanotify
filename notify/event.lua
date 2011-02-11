@@ -358,8 +358,8 @@ end
 local global_event = new()
 
 --- 
--- Always returns the same event object, this way is easy to share the same event instance on different modules.
--- @return An event to use on global events.
+-- Always returns the same Event instance, this way is easy to share the same Event across different modules.
+-- @return An Event instance.
 function get_global_event()
    return global_event 
 end
