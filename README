@@ -11,8 +11,7 @@ and to be more Lua-ish as possible.
 
 Quick start
 -----------
-Just copy the *.lua files to your project directory and use it or 
-copy it to the Lua default module search path so Lua can find it.  
+Just copy the notify directory to a place where Lua can find it.  
 
 
 References
