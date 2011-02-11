@@ -171,7 +171,7 @@ end
 -- @return The new Event object.
 function new()
     local object = {}
-    -- set the metatable of the new object as the Signal_mt table (inherits Signal).
+    -- set the metatable of the new object as the Event_mt table (inherits Event).
     setmetatable(object, Event_mt)
 
     -- create all the instance state data.
@@ -358,8 +358,7 @@ end
 local global_event = new()
 
 --- 
--- Usefull when someone wants to use events that will propagate trough the entire system. 
--- Always returns the same event object, in this way is easy to the entire system to share the same event instance.
+-- Always returns the same event object, this way is easy to share the same event instance on different modules.
 -- @return An event to use on global events.
 function get_global_event()
    return global_event 
