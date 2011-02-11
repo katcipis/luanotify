@@ -25,8 +25,7 @@
 print("<<<<<<<<<<<<< STARTING TESTS >>>>>>>>>>>>>")
 
 dofile("test_double_queue.lua")
-dofile("test_global_event.lua")
-dofile("test_instance_event.lua")
+dofile("test_event.lua")
 dofile("test_signal.lua")
 
 print("<<<<<<<<<<<<< TESTS ENDED>>>>>>>>>>>>>")
