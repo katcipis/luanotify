@@ -23,7 +23,7 @@
 ---------------------------------------------------------------------------------
 
 require "lunit"
-
+package.path = package.path..";../?.lua"
 module("signal_testcase", lunit.testcase, package.seeall)
 
 local signal_module = require "notify.signal"
@@ -832,6 +832,38 @@ function test_if_a_signal_is_stopped_no_more_handlers_are_called_on_that_emissio
     assert_equal(0, call_counter)
     signal:emit()
     assert_equal(2, call_counter) 
+end
+
+
+function test_if_a_signal_is_stopped_it_wil_be_stop_only_the_current_emission()
+
+    local handler1 = function ()
+                         assert_equal(0, call_counter)
+                         call_counter = call_counter + 1
+                     end
+
+    local handler2 = function ()
+                         assert_equal(1, call_counter)
+                         call_counter = call_counter + 1
+                         signal:stop()
+                     end
+
+    local handler3 = function ()
+                         call_counter = call_counter + 1
+                     end
+
+    signal:connect(handler1)
+    signal:connect(handler2)
+    signal:connect(handler3)
+
+    assert_equal(0, call_counter)
+    signal:emit()
+    assert_equal(2, call_counter)
+    signal:disconnect(handler2)
+    call_counter = 0
+    signal:emit()
+    assert_equal(2, call_counter)
+    
 end
 
 

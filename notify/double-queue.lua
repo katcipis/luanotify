@@ -1,4 +1,9 @@
----------------------------------------------------------------------------------
+---
+-- @class module
+-- @name notify.double-queue
+-- @description A simple double queue implementation.
+
+--
 -- Copyright (C) 2010 Tiago Katcipis <tiagokatcipis@gmail.com>
 -- Copyright (C) 2010 Paulo Pizarro  <paulo.pizarro@gmail.com>
 -- 
@@ -19,39 +24,22 @@
 
 -- You should have received a copy of the GNU Lesser General Public License
 -- along with LuaNotify.  If not, see <http://www.gnu.org/licenses/>.
----------------------------------------------------------------------------------
-
----
--- @class module
--- @name ordered_set
--- @description DoubleQueue Class.
--- @author <a href="mailto:tiagokatcipis@gmail.com">Tiago Katcipis</a>
--- @author <a href="mailto:paulo.pizarro@gmail.com">Paulo Pizarro</a>
--- @copyright 2010 Tiago Katcipis, Paulo Pizarro.
+--
 
 local setmetatable = setmetatable
 
-module(...)
-
------------------------------------------------------
--- Class attributes and methods goes on this table --
------------------------------------------------------
 local DoubleQueue = {}
 
-------------------------------------
+-- Class attributes and methods goes on this table --
+local DoubleQueueObject = {}
+
 -- Metamethods goes on this table --
-------------------------------------
-local DoubleQueue_mt = { __index = DoubleQueue }
+local DoubleQueueObject_mt = { __index = DoubleQueueObject }
 
 
---------------------------
--- Constructor function --
---------------------------
-
-function new ()
-    local object = {}
-    -- set the metatable of the new object as the DoubleQueue_mt table (inherits DoubleQueue).
-    setmetatable(object, DoubleQueue_mt)
+-- Module exported functions --
+function DoubleQueue.new ()
+    local object = setmetatable({}, DoubleQueueObject_mt)
 
     -- create all the instance state data.
     object.data          = {}
@@ -61,9 +49,7 @@ function new ()
     return object
 end
 
----------------------------
--- Class private methods --
----------------------------
+-- Private methods --
 local function refresh_first(self)
     while(self.first <= self.last) do
         if(self.data[self.first]) then
@@ -74,14 +60,12 @@ local function refresh_first(self)
 end
 
 
---------------------------
--- Class public methods --
---------------------------
-function DoubleQueue:is_empty()
+-- Public methods --
+function DoubleQueueObject:is_empty()
     return self.first > self.last
 end
 
-function DoubleQueue:push_front(data)
+function DoubleQueueObject:push_front(data)
     if(self.data_position[data]) then
         return
     end
@@ -90,7 +74,7 @@ function DoubleQueue:push_front(data)
     self.data_position[data] = self.first
 end
 
-function DoubleQueue:push_back(data)
+function DoubleQueueObject:push_back(data)
     if(self.data_position[data]) then
         return
     end
@@ -99,7 +83,7 @@ function DoubleQueue:push_back(data)
     self.data_position[data] = self.last
 end
 
-function DoubleQueue:get_iterator()
+function DoubleQueueObject:get_iterator()
     local first = self.first
     local function iterator()
         while(first <= self.last) do
@@ -113,7 +97,7 @@ function DoubleQueue:get_iterator()
     return iterator
 end
 
-function DoubleQueue:remove(data)
+function DoubleQueueObject:remove(data)
     if(not self.data_position[data]) then
         return 
     end
@@ -122,3 +106,4 @@ function DoubleQueue:remove(data)
     refresh_first(self)
 end
 
+return DoubleQueue

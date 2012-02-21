@@ -1,4 +1,8 @@
----------------------------------------------------------------------------------
+---
+-- @class module
+-- @name notify.event
+-- @description EventObject object definition.
+
 -- Copyright (C) 2010 Tiago Katcipis <tiagokatcipis@gmail.com>
 -- Copyright (C) 2010 Paulo Pizarro  <paulo.pizarro@gmail.com>
 -- 
@@ -19,12 +23,11 @@
 
 -- You should have received a copy of the GNU Lesser General Public License
 -- along with LuaNotify.  If not, see <http://www.gnu.org/licenses/>.
----------------------------------------------------------------------------------
 
 ---
 -- @class module
 -- @name event
--- @description Event Class.
+-- @description EventObject Class.
 -- @author <a href="mailto:tiagokatcipis@gmail.com">Tiago Katcipis</a>
 -- @author <a href="mailto:paulo.pizarro@gmail.com">Paulo Pizarro</a>
 -- @copyright 2010 Tiago Katcipis, Paulo Pizarro.
@@ -35,31 +38,26 @@ local string = string
 local error  = error
 local unpack = unpack
 
-module(...)
-
-local queue = require "notify.double_queue" 
+local Queue = require "notify.double-queue" 
 local separator = ":"
 
 
------------------------------------------------------
--- Class attributes and methods goes on this table --
------------------------------------------------------
+-- Module exported functions
 local Event = {}
 
+-- Class attributes and methods goes on this table --
+local EventObject = {}
 
-------------------------------------
+
 -- Metamethods goes on this table --
-------------------------------------
-local Event_mt = { __index = Event }
+local EventObject_mt = { __index = EventObject }
 
 
----------------------------------
 -- Private methods definition --
----------------------------------
 local function new_node()
-    return { handlers   = queue.new(),
-             pre_emits  = queue.new(),
-             post_emits = queue.new(),
+    return { handlers   = Queue.new(),
+             pre_emits  = Queue.new(),
+             post_emits = Queue.new(),
              blocked_handlers = {}, 
              subevents  = {} } 
 end
@@ -127,8 +125,8 @@ end
 
 
 local function call_pre_emits(self, event_name)
-    local nodes = queue.new()
-    local reversed_nodes = queue.new()
+    local nodes = Queue.new()
+    local reversed_nodes = Queue.new()
 
     for node in event_iterator(self, event_name) do
         for pre_emit in node.pre_emits:get_iterator() do pre_emit(event_name) end
@@ -162,17 +160,14 @@ local function call_handlers(self, params)
     end
 end
 
---------------------------
--- Constructor function --
---------------------------
+
+-- Module exported functions
 
 ---
 -- Creates a new Event object.
 -- @return The new Event object.
-function new()
-    local object = {}
-    -- set the metatable of the new object as the Event_mt table (inherits Event).
-    setmetatable(object, Event_mt)
+function Event.new()
+    local object = setmetatable({}, EventObject_mt)
 
     -- create all the instance state data.
     object.stopped = false
@@ -181,15 +176,13 @@ function new()
 end
 
 
-----------------------------------
 -- Class definition and methods --
-----------------------------------
 
 ---
 -- Connects a handler function on this event.
 -- @param event_name       - The event name (eg: mouse::click or just mouse). 
 -- @param handler_function - The function that will be called when the event_name is emitted.
-function Event:connect(event_name, handler_function)
+function EventObject:connect(event_name, handler_function)
     local node = get_node(self, event_name)
     node.handlers:push_back(handler_function)
 
@@ -202,7 +195,7 @@ end
 -- Disconnects a handler function on this event.
 -- @param event_name       - The event name (eg: mouse::click or just mouse). 
 -- @param handler_function - The function that will be disconnected.
-function Event:disconnect(event_name, handler_function)
+function EventObject:disconnect(event_name, handler_function)
     if unused_event(self, event_name) then return end
 
     local node = get_node(self, event_name)
@@ -215,7 +208,7 @@ end
 -- It can be called several times for the same handler function.
 -- @param event_name - The event name (eg: mouse::click or just mouse).
 -- @param handler_function - The handler function that will be blocked.
-function Event:block(event_name, handler_function)
+function EventObject:block(event_name, handler_function)
     if unused_event(self, event_name) then return end
 
     local node = get_node(self, event_name)
@@ -229,7 +222,7 @@ end
 -- Unblocks the handler function from the given event. The calls to unblock must match the calls to block.
 -- @param event_name - The event name (eg: mouse::click or just mouse).
 -- @param handler_function - The handler function that will be unblocked.
-function Event:unblock(event_name, handler_function)
+function EventObject:unblock(event_name, handler_function)
     if unused_event(self, event_name) then return end
 
     local node = get_node(self, event_name)
@@ -248,7 +241,7 @@ end
 -- Emiting "event1" will call handlers connected only to "event1". 
 -- @param event_name - The event name (eg: mouse::click or just mouse).
 -- @param ...        - A optional list of parameters, they will be repassed to the handler functions connected to this event.
-function Event:emit(event_name, ...)
+function EventObject:emit(event_name, ...)
     self.stopped = false
     local nodes, reversed_nodes = call_pre_emits(self, event_name)
     call_handlers(self, {event_name=event_name, nodes=nodes, args={...}})
@@ -271,7 +264,7 @@ end
 --                      all the handlers returned values.
 -- @param ...         - A optional list of parameters, they will be repassed to the handler 
 --                      functions connected to this signal.
-function Event:emit_with_accumulator(event_name, accumulator, ...)
+function EventObject:emit_with_accumulator(event_name, accumulator, ...)
     self.stopped = false
     local nodes, reversed_nodes = call_pre_emits(self, event_name)
     call_handlers(self, {event_name=event_name, nodes=nodes, accumulator=accumulator, args={...}})
@@ -292,7 +285,7 @@ end
 -- first the pre_emit functions on mouse will be called, then mouse::button1 post_emit functions will be called.
 -- @param event_name    - The event name (eg: mouse::click or just mouse).
 -- @param pre_emit_func - The pre_emit function.
-function Event:add_pre_emit(event_name, pre_emit_func)
+function EventObject:add_pre_emit(event_name, pre_emit_func)
     get_node(self, event_name).pre_emits:push_back(pre_emit_func)
 end
 
@@ -301,7 +294,7 @@ end
 -- Removes a pre-emit func from the given event.
 -- @param event_name - The event name (eg: mouse::click or just mouse). 
 -- @param pre_emit_func - The pre_emit function.
-function Event:remove_pre_emit(event_name, pre_emit_func)
+function EventObject:remove_pre_emit(event_name, pre_emit_func)
     if unused_event(self, event_name) then return end
     get_node(self, event_name).pre_emits:remove(pre_emit_func)    
 end
@@ -320,7 +313,7 @@ end
 -- functions on mouse::button1 will be called, then mouse post_emit functions will be called.
 -- @param event_name - The event name (eg: mouse::click or just mouse). 
 -- @param post_emit_func - The post_emit function.
-function Event:add_post_emit(event_name, post_emit_func)
+function EventObject:add_post_emit(event_name, post_emit_func)
     get_node(self, event_name).post_emits:push_front(post_emit_func)
 end
 
@@ -329,7 +322,7 @@ end
 -- Removes a post-emit func from the given event. 
 -- @param event_name - The event name (eg: mouse::click or just mouse). 
 -- @param post_emit_func - The post_emit function.
-function Event:remove_post_emit(event_name, post_emit_func)
+function EventObject:remove_post_emit(event_name, post_emit_func)
     if unused_event(self, event_name) then return end
     get_node(self, event_name).post_emits:remove(post_emit_func)
 end
@@ -337,7 +330,7 @@ end
 ---
 -- Has effect only during a emission and will stop only this particular emission of the event.
 -- Usually called inside a pre-emit (when a condition fail) or on any handler.
-function Event:stop()
+function EventObject:stop()
     self.stopped = true
 end
 
@@ -345,21 +338,21 @@ end
 -- Removes all pre/post-emits and handlers from the given event_name.
 -- If no name is given all pre/post-emits and handlers will be removed.
 -- @param event_name - The name of the event that will be cleared, or nil to clear all events.
-function Event:clear(event_name)
+function EventObject:clear(event_name)
     if (not event_name) then
         self.events = {} 
         return
     end
 end
 
-----------------------
 -- Public functions --
-----------------------
-local global_event = new()
+local global_event = Event.new()
 
 --- 
--- Always returns the same Event instance, this way is easy to share the same Event across different modules.
--- @return An Event instance.
-function get_global_event()
+-- Always returns the same Event instance, this way is easy to share the same Event object across different modules.
+-- @return An EventObject instance.
+function Event.get_global_event()
    return global_event 
 end
+
+return Event

@@ -23,16 +23,17 @@
 -- You should have received a copy of the GNU Lesser General Public License
 -- along with LuaNotify.  If not, see <http://www.gnu.org/licenses/>.
 ---------------------------------------------------------------------------------
+package.path = package.path..";../?.lua"
 
 require "lunit"
 
 module("event_testcase", lunit.testcase, package.seeall)
 
-local event_module = require "notify.event"
+local Event = require "notify.event"
 local event = nil
 
 function setUp()
-    event = event_module.new()
+    event = Event.new()
     call_counter = 0
 end
 
@@ -188,7 +189,7 @@ end
 
 function test_the_same_handler_function_can_be_connected_to_different_events()
     local handler = function (name) call_counter = call_counter + 1 end
-    local event2 = event_module.new()
+    local event2 = Event.new()
 
     event:connect("luanotify:event:test1", handler)
     event2:connect("luanotify:event:test1", handler)
@@ -204,7 +205,7 @@ end
 function test_the_differente_handler_function_can_be_connected_to_different_events_and_they_are_called_just_one_time()
     local handler = function (name) call_counter = call_counter + 1 end
     local handler2 = function (name) call_counter = call_counter + 1 end
-    local event2 = event_module.new()
+    local event2 = Event.new()
 
     event:connect("luanotify:event:test1", handler)
     event2:connect("luanotify:event:test1", handler2)
@@ -1305,7 +1306,7 @@ end
 
 
 function test_setting_the_event_instance_to_nil_does_not_stop_event_emission()
-    local evt = event_module.new()
+    local evt = Event.new()
  
     local handler1 = function (name)
                          assert_equal(0, call_counter)

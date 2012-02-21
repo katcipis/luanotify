@@ -19,14 +19,17 @@
 -- You should have received a copy of the GNU Lesser General Public License
 -- along with LuaNotify.  If not, see <http://www.gnu.org/licenses/>.
 ---------------------------------------------------------------------------------
+package.path = package.path..";../?.lua"
+
 require "lunit"
-require "notify.double_queue"
+
+local DoubleQueue = require "notify.double-queue"
 
 module("double_queue_testcase", lunit.testcase, package.seeall)
 
 
 function setUp()
-    double_queue = notify.double_queue.new()
+    double_queue = DoubleQueue.new()
 end
 
 function tearDown()
@@ -482,7 +485,7 @@ end
 
 function test_if_you_set_nested_queue_to_nil_the_iterator_of_nested_queue_keep_working()
     for i=1,10 do
-        local queue = notify.double_queue.new()
+        local queue = DoubleQueue.new()
         for j=1,100 do
             queue:push_back("item b"..i)
             queue:push_front("item f"..i)
