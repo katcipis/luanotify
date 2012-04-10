@@ -6,8 +6,6 @@ Introduction
 ------------
 LuaNotify is inspired on many libraries that do event dispatching, like
 py-notify, GSignals, QT event system, wxWidgets event system, etc. 
-But trying to do something different that can make use of Lua resources 
-and to be more Lua-ish as possible. 
 
 Quick start
 -----------
