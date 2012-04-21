@@ -1,0 +1,10 @@
+project = 'LuaNotify'
+description = 'LuaNotify 0.2.0'
+full_description = 'The documentation is available @{01-introduction.md|here}.'
+title = 'LuaNotify Documentation'
+dir = 'api'
+topics = 'manual'
+examples = {'../tests'}
+package = 'notify'
+format = 'discount'
+file = '../notify'
