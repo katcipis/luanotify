@@ -1,5 +1,24 @@
 ---
--- EventObject object definition.
+-- This module aims to build a generic hierarchic event system.  
+-- The hierarchic model uses string event names to define what event are you working with.  
+--
+-- For example:  
+--
+-- *  "event"              -> Just a normal event.  
+-- *  "event:subevent"     -> Using the subevent feature.  
+--
+-- The ":" is what defines that you are using hierarchic events,
+-- every ":" you put is a new hierarchic level.  
+--
+-- When emiting "event:subevent", everyone connected at "event" and "event:subevent"
+-- is going to be notified. When emitting "event", only the ones connected at "event" are
+-- going to be notified.   
+--
+-- Using this hierarchical structure it is easy to be notified only when a specific event happens
+-- or when a whole bunch of events inside a category happens. All events can be expressed on a tree,
+-- where a node is a event, and you can connect,add a pre emit, add a post emit,
+-- disconnect, block, unblock, emit, on any node of the tree.    
+--
 -- @class module
 -- @name notify.event
 
@@ -172,7 +191,8 @@ end
 
 ---
 -- Connects a handler function on this event.
--- @param event_name       - The event name (eg: mouse::click or just mouse). 
+-- If any subevent is emitted, this handler will be called too.
+-- @param event_name       - The event name. 
 -- @param handler_function - The function that will be called when the event_name is emitted.
 function EventObject:connect(event_name, handler_function)
     local node = get_node(self, event_name)
@@ -185,7 +205,7 @@ end
 
 ---
 -- Disconnects a handler function on this event.
--- @param event_name       - The event name (eg: mouse::click or just mouse). 
+-- @param event_name       - The event name. 
 -- @param handler_function - The function that will be disconnected.
 function EventObject:disconnect(event_name, handler_function)
     if unused_event(self, event_name) then return end
@@ -198,7 +218,24 @@ end
 ---
 -- Does not execute the given handler function when the give event is emitted until it is unblocked. 
 -- It can be called several times for the same handler function.
--- @param event_name - The event name (eg: mouse::click or just mouse).
+--
+-- Example:
+--
+--    local Event = require "notify.event"
+--    local event = Event.new()
+
+--    local function handler1(arg)
+--        print(arg)
+--    end
+--
+--    event:connect("mouse", handler1)
+--    event:emit("mouse", "example") -- example gets printed.
+--
+--    event:block("mouse", handler1);
+--    event:emit("mouse", "example") -- nothing gets printed.
+--
+--
+-- @param event_name - The event name.
 -- @param handler_function - The handler function that will be blocked.
 function EventObject:block(event_name, handler_function)
     if unused_event(self, event_name) then return end
@@ -211,8 +248,34 @@ function EventObject:block(event_name, handler_function)
 end
 
 ---
--- Unblocks the handler function from the given event. The calls to unblock must match the calls to block.
--- @param event_name - The event name (eg: mouse::click or just mouse).
+-- Unblocks the handler function from the given event.
+-- The calls to unblock must match the calls to block.
+--
+-- Example:
+--
+--    local Event = require "notify.event"
+--    local event = Event.new()
+--
+--    local function handler1(arg)
+--        print(arg)
+--    end
+--
+--    event:connect("mouse", handler1)
+--    event:emit("mouse", "example") -- example gets printed.
+--
+--    event:block("mouse", handler1);
+--    event:emit("mouse", "example") -- nothing gets printed.
+--
+--    event:block("mouse", handler1);
+--    event:emit("mouse", "example") -- nothing gets printed.
+--
+--    event:unblock("mouse", handler1);
+--    event:emit("mouse", "example") -- nothing gets printed.
+--    event:unblock("mouse", handler1);
+--    event:emit("mouse", "example") -- example gets printed.
+--
+--
+-- @param event_name - The event name.
 -- @param handler_function - The handler function that will be unblocked.
 function EventObject:unblock(event_name, handler_function)
     if unused_event(self, event_name) then return end
@@ -227,11 +290,14 @@ end
 
 ---
 -- Emits an event and all handler functions connected to it will be called.
--- Example: Emiting an event: "event1::event2::event3" will call all handlers connected to "event1". 
--- Then handlers connected to "event1::event2" and at last handlers connected to "event1::event2::event3". 
--- Emiting "event1::event2" will call handlers connected to "event1" and "event1::event2" only. 
--- Emiting "event1" will call handlers connected only to "event1". 
--- @param event_name - The event name (eg: mouse::click or just mouse).
+-- Emiting the event "event1::event2::event3" will call the handlers connected
+-- on the following events, on this order:    
+--  
+--  * event1
+--  * event1:event2
+--  * event1:event2:event3
+--
+-- @param event_name - The event name.
 -- @param ...        - A optional list of parameters, they will be repassed to the handler functions connected to this event.
 function EventObject:emit(event_name, ...)
     self.stopped = false
@@ -245,13 +311,13 @@ end
 -- Typical emission discards handlers return values completely. 
 -- This is most often what you need: just inform the world about something. 
 -- However, sometimes you need a way to get feedback. 
--- For instance, you may want to ask: “is this value acceptable, eh?”
+-- For instance, you may want to ask: “is this value acceptable ?”
 -- This is what accumulators are for. Accumulators are specified to events at emission time. 
 -- They can combine, alter or discard handlers return values, post-process them or even stop emission. 
 -- Since a handler can return multiple values, accumulators can receive multiple args too. 
 -- Following Lua flexible style we give the user the freedom to do whatever he wants with accumulators. 
 -- If you are using the hierarchic event system the behaviour of handlers calling is similar to the emit function.
--- @param event_name  - The event name (eg: mouse::click or just mouse). 
+-- @param event_name  - The event name. 
 -- @param accumulator - Function that will receive handlers results or a table to accumulate 
 --                      all the handlers returned values.
 -- @param ...         - A optional list of parameters, they will be repassed to the handler 
@@ -275,7 +341,7 @@ end
 -- They are called on a queue (FIFO) policy based on the order they added. 
 -- When using hierarchy, pre_emission happen top-bottom. For example, with a mouse::button1 event, 
 -- first the pre_emit functions on mouse will be called, then mouse::button1 post_emit functions will be called.
--- @param event_name    - The event name (eg: mouse::click or just mouse).
+-- @param event_name    - The event name.
 -- @param pre_emit_func - The pre_emit function.
 function EventObject:add_pre_emit(event_name, pre_emit_func)
     get_node(self, event_name).pre_emits:push_back(pre_emit_func)
@@ -284,7 +350,7 @@ end
 
 ---
 -- Removes a pre-emit func from the given event.
--- @param event_name - The event name (eg: mouse::click or just mouse). 
+-- @param event_name - The event name. 
 -- @param pre_emit_func - The pre_emit function.
 function EventObject:remove_pre_emit(event_name, pre_emit_func)
     if unused_event(self, event_name) then return end
@@ -303,7 +369,7 @@ end
 -- They are called on a stack (LIFO) policy  based on the order they added. When using hierarchy, 
 -- post_emission happen bottom-top. For example, with a mouse::button1 event, first the post_emit 
 -- functions on mouse::button1 will be called, then mouse post_emit functions will be called.
--- @param event_name - The event name (eg: mouse::click or just mouse). 
+-- @param event_name - The event name. 
 -- @param post_emit_func - The post_emit function.
 function EventObject:add_post_emit(event_name, post_emit_func)
     get_node(self, event_name).post_emits:push_front(post_emit_func)
@@ -312,7 +378,7 @@ end
 
 ---
 -- Removes a post-emit func from the given event. 
--- @param event_name - The event name (eg: mouse::click or just mouse). 
+-- @param event_name - The event name. 
 -- @param post_emit_func - The post_emit function.
 function EventObject:remove_post_emit(event_name, post_emit_func)
     if unused_event(self, event_name) then return end
@@ -322,6 +388,26 @@ end
 ---
 -- Has effect only during a emission and will stop only this particular emission of the event.
 -- Usually called inside a pre-emit (when a condition fail) or on any handler.
+--
+-- Example:
+--
+--    local Event = require "notify.event"
+--    local event = Event.new()
+--
+--    function handler1()
+--        print("handler1")
+--        event.stop();
+--    end
+--
+--    function handler2()
+--        print("2")
+--    end
+--
+--    event:connect("mouse", handler1)
+--    event:connect("mouse::click", handler2)
+--
+--    event:emit("mouse::click") --handler2 never gets printed because handler1 always stops the emission
+--
 function EventObject:stop()
     self.stopped = true
 end
