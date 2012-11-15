@@ -12,6 +12,28 @@ Quick start
 Just copy the notify directory to a place where Lua can find it.  
 
 
+Documentation
+-----------
+The documentation is generated using ldoc and lua-discount.
+You can install them using luarocks:
+
+luarocks install ldoc lua-discount
+
+Inside the doc directory, just run:
+
+ldoc.lua .
+
+And the documentation will be generated.
+
+
+Running tests
+----------
+To run the tests you will need lunit installed, just run:
+
+luarocks install lunit
+
+
+
 References
 ----------
 

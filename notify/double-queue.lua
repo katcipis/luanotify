@@ -32,6 +32,9 @@ local DoubleQueueObject_mt = { __index = DoubleQueueObject }
 
 
 -- Module exported functions --
+
+---
+-- Creates a new double queue.
 function DoubleQueue.new ()
     local object = setmetatable({}, DoubleQueueObject_mt)
 
@@ -55,10 +58,17 @@ end
 
 
 -- Public methods --
+
+---
+-- Check if the queue is empty
+-- @return true if it is empty, false otherwise.
 function DoubleQueueObject:is_empty()
     return self.first > self.last
 end
 
+---
+-- Pushes data on the front of the queue.
+-- @param data The data thas is being pushed.
 function DoubleQueueObject:push_front(data)
     if(self.data_position[data]) then
         return
@@ -68,6 +78,9 @@ function DoubleQueueObject:push_front(data)
     self.data_position[data] = self.first
 end
 
+---
+-- Pushes data on the back of the queue.
+-- @param data The data thas is being pushed.
 function DoubleQueueObject:push_back(data)
     if(self.data_position[data]) then
         return
@@ -77,6 +90,17 @@ function DoubleQueueObject:push_back(data)
     self.data_position[data] = self.last
 end
 
+
+---
+-- Get the queue iterator.
+-- Each call to the iterator function returns the next element.
+-- Example:
+--
+--    for data in queue:get_iterator() do
+--        print("mydata: "..tostring(data))
+--    end
+--
+-- @return An iterator function.
 function DoubleQueueObject:get_iterator()
     local first = self.first
     local function iterator()
@@ -91,6 +115,10 @@ function DoubleQueueObject:get_iterator()
     return iterator
 end
 
+---
+-- Removes the first ocurrence of data from the queue.
+-- If the data cant be found on the queue, nothing happens.
+-- @param data The data that is going the be removed.
 function DoubleQueueObject:remove(data)
     if(not self.data_position[data]) then
         return 
@@ -101,3 +129,4 @@ function DoubleQueueObject:remove(data)
 end
 
 return DoubleQueue
+
