@@ -1,0 +1,574 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>LuaNotify Documentation</title>
+    <link rel="stylesheet" href="../ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>LuaNotify</h1>
+
+<ul>
+  <li><a href="../index.html">Index</a></li>
+</ul>
+
+
+
+<h2>Examples</h2>
+<ul>
+  <li><strong>double-queue.lua</strong></li>
+  <li><a href="../examples/event.lua.html">event.lua</a></li>
+  <li><a href="../examples/signal.lua.html">signal.lua</a></li>
+</ul>
+<h2>Modules</h2>
+<ul>
+  <li><a href="../modules/notify.double-queue.html">notify.double-queue</a></li>
+  <li><a href="../modules/notify.event.html">notify.event</a></li>
+  <li><a href="../modules/notify.signal.html">notify.signal</a></li>
+</ul>
+<h2>Topics</h2>
+<ul>
+  <li><a href="../topics/01-introduction.md.html">01-introduction.md</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Example <code>double-queue.lua</code></h1>
+
+    <pre>
+<span class="comment">--------------------------------------------------------------------------------
+</span>
+<span class="comment">-- Copyright (C) 2010 Tiago Katcipis &lt;tiagokatcipis@gmail.com&gt;
+</span><span class="comment">-- Copyright (C) 2010 Paulo Pizarro  &lt;paulo.pizarro@gmail.com&gt;
+</span>
+<span class="comment">-- @author Paulo Pizarro  &lt;paulo.pizarro@gmail.com&gt;
+</span><span class="comment">-- @author Tiago Katcipis &lt;tiagokatcipis@gmail.com&gt;
+</span>
+<span class="comment">-- This file is part of LuaNotify.
+</span>
+<span class="comment">-- LuaNotify is free software: you can redistribute it and/or modify
+</span><span class="comment">-- it under the terms of the GNU Lesser General Public License as published by
+</span><span class="comment">-- the Free Software Foundation, either version 3 of the License, or
+</span><span class="comment">-- (at your option) any later version.
+</span>
+<span class="comment">-- LuaNotify is distributed in the hope that it will be useful,
+</span><span class="comment">-- but WITHOUT ANY WARRANTY; without even the implied warranty of
+</span><span class="comment">-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+</span><span class="comment">-- You should have received a copy of the GNU Lesser General Public License
+</span><span class="comment">-- along with LuaNotify.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+</span><span class="comment">---------------------------------------------------------------------------------
+</span><span class="global">package</span>.path = <span class="global">package</span>.path..<span class="string">";../?.lua"</span>
+
+<span class="global">require</span> <span class="string">"lunit"</span>
+
+<span class="keyword">local</span> DoubleQueue = <span class="global">require</span> <span class="string">"notify.double-queue"</span>
+
+<span class="global">module</span>(<span class="string">"double_queue_testcase"</span>, lunit.testcase, <span class="global">package</span>.seeall)
+
+
+<span class="keyword">function</span> setUp()
+    double_queue = DoubleQueue.new()
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> tearDown()
+    double_queue = <span class="keyword">nil</span>
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> test_data_pushed_on_the_back_will_be_the_last_to_access_on_iteration()
+    double_queue:push_back(<span class="number">1</span>)
+    double_queue:push_back(<span class="number">2</span>)
+    double_queue:push_back(<span class="number">3</span>)
+
+    <span class="keyword">local</span> counter = <span class="number">1</span>
+    assert_false(double_queue:is_empty())
+
+    <span class="keyword">for</span> data <span class="keyword">in</span> double_queue:get_iterator() <span class="keyword">do</span>
+        assert_equal(counter, data)
+        counter = counter + <span class="number">1</span>
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> test_knows_if_it_is_empty()
+    assert_true(double_queue:is_empty())
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> test_knows_if_it_is_not_empty()
+    double_queue:push_back(<span class="number">1</span>)
+    assert_false(double_queue:is_empty())
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> test_iteration_wont_change_the_order_of_the_data()
+    double_queue:push_back(<span class="number">1</span>)
+    double_queue:push_back(<span class="number">2</span>)
+    double_queue:push_back(<span class="number">3</span>)
+
+    <span class="keyword">local</span> counter = <span class="number">1</span>
+    <span class="keyword">for</span> data <span class="keyword">in</span> double_queue:get_iterator() <span class="keyword">do</span>
+        assert_equal(counter, data)
+        counter = counter + <span class="number">1</span>
+    <span class="keyword">end</span>
+
+    counter = <span class="number">1</span>
+    <span class="keyword">for</span> data <span class="keyword">in</span> double_queue:get_iterator() <span class="keyword">do</span>
+        assert_equal(counter, data)
+        counter = counter + <span class="number">1</span>
+    <span class="keyword">end</span>
+
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> test_if_nil_is_pushed_on_the_front_an_error_occur()
+    assert_error(<span class="string">"table index is nil"</span>, <span class="keyword">function</span> () double_queue:push_front(<span class="keyword">nil</span>) <span class="keyword">end</span>)
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> test_if_nil_is_pushed_on_the_back_an_error_occur()
+    assert_error(<span class="string">"table index is nil"</span>, <span class="keyword">function</span> () double_queue:push_back(<span class="keyword">nil</span>) <span class="keyword">end</span>)
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> test_data_pushed_on_the_front_will_be_the_first_to_access_on_iteration()
+    double_queue:push_front(<span class="number">1</span>)
+    double_queue:push_front(<span class="number">2</span>)
+    double_queue:push_front(<span class="number">3</span>)
+
+    <span class="keyword">local</span> counter = <span class="number">3</span>
+    assert_false(double_queue:is_empty())
+
+    <span class="keyword">for</span> data <span class="keyword">in</span> double_queue:get_iterator() <span class="keyword">do</span>
+        assert_equal(counter, data)
+        counter = counter - <span class="number">1</span>
+    <span class="keyword">end</span>
+
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> test_after_removing_data_the_data_will_no_longer_exist_on_the_set()
+    double_queue:push_front(<span class="string">"apple"</span>)
+    double_queue:push_front(<span class="string">"test"</span>)
+    double_queue:push_front(<span class="string">"pineapple"</span>)
+    double_queue:push_front(<span class="string">"end"</span>)
+
+    assert_false(double_queue:is_empty())
+    
+    <span class="keyword">local</span> counter = <span class="number">0</span>
+    double_queue:remove(<span class="string">"test"</span>)
+    <span class="keyword">for</span> data <span class="keyword">in</span> double_queue:get_iterator() <span class="keyword">do</span>
+        assert_not_equal(<span class="string">"test"</span>, data)
+        counter = counter + <span class="number">1</span>
+    <span class="keyword">end</span>
+    assert_equal(<span class="number">3</span>, counter)    
+    
+    counter = <span class="number">0</span>
+    double_queue:remove(<span class="string">"end"</span>)
+    <span class="keyword">for</span> data <span class="keyword">in</span> double_queue:get_iterator() <span class="keyword">do</span>
+        assert_not_equal(<span class="string">"test"</span>, data)
+        assert_not_equal(<span class="string">"end"</span>, data)
+        counter = counter + <span class="number">1</span>
+    <span class="keyword">end</span>
+    assert_equal(<span class="number">2</span>, counter)
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> test_after_removing_data_from_the_middle_the_previous_order_remains_the_same()
+    double_queue:push_back(<span class="string">"apple"</span>)
+    double_queue:push_back(<span class="string">"test"</span>)
+    double_queue:push_back(<span class="string">"pineapple"</span>)
+    double_queue:push_back(<span class="string">"end"</span>)
+
+    assert_false(double_queue:is_empty())
+    
+    <span class="keyword">local</span> counter = <span class="number">0</span>
+    double_queue:remove(<span class="string">"pineapple"</span>)
+    <span class="keyword">for</span> data <span class="keyword">in</span> double_queue:get_iterator() <span class="keyword">do</span>
+        counter = counter + <span class="number">1</span>
+        <span class="keyword">if</span>(counter == <span class="number">1</span>) <span class="keyword">then</span>
+            assert_equal(<span class="string">"apple"</span>, data)
+        <span class="keyword">elseif</span>(counter == <span class="number">2</span>) <span class="keyword">then</span>
+            assert_equal(<span class="string">"test"</span>, data)
+        <span class="keyword">else</span>
+            assert_equal(<span class="string">"end"</span>, data)
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+    assert_equal(<span class="number">3</span>, counter)
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> test_after_removing_data_from_the_front_the_previous_order_remains_the_same()
+    double_queue:push_back(<span class="string">"apple"</span>)
+    double_queue:push_back(<span class="string">"test"</span>)
+    double_queue:push_back(<span class="string">"pineapple"</span>)
+    double_queue:push_back(<span class="string">"end"</span>)
+
+    assert_false(double_queue:is_empty())
+
+    <span class="keyword">local</span> counter = <span class="number">0</span>
+    double_queue:remove(<span class="string">"apple"</span>)
+    <span class="keyword">for</span> data <span class="keyword">in</span> double_queue:get_iterator() <span class="keyword">do</span>
+        counter = counter + <span class="number">1</span>
+        <span class="keyword">if</span>(counter == <span class="number">1</span>) <span class="keyword">then</span>
+            assert_equal(<span class="string">"test"</span>, data)
+        <span class="keyword">elseif</span>(counter == <span class="number">2</span>) <span class="keyword">then</span>
+            assert_equal(<span class="string">"pineapple"</span>, data)
+        <span class="keyword">else</span>
+            assert_equal(<span class="string">"end"</span>, data)
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+    assert_equal(<span class="number">3</span>, counter)
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> test_after_removing_data_from_the_back_the_previous_order_remains_the_same()
+    double_queue:push_back(<span class="string">"apple"</span>)
+    double_queue:push_back(<span class="string">"test"</span>)
+    double_queue:push_back(<span class="string">"pineapple"</span>)
+    double_queue:push_back(<span class="string">"end"</span>)
+
+    assert_false(double_queue:is_empty())
+
+    <span class="keyword">local</span> counter = <span class="number">0</span>
+    double_queue:remove(<span class="string">"end"</span>)
+    <span class="keyword">for</span> data <span class="keyword">in</span> double_queue:get_iterator() <span class="keyword">do</span>
+        counter = counter + <span class="number">1</span>
+        <span class="keyword">if</span>(counter == <span class="number">1</span>) <span class="keyword">then</span>
+            assert_equal(<span class="string">"apple"</span>, data)
+        <span class="keyword">elseif</span>(counter == <span class="number">2</span>) <span class="keyword">then</span>
+            assert_equal(<span class="string">"test"</span>, data)
+        <span class="keyword">else</span>
+            assert_equal(<span class="string">"pineapple"</span>, data)
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+    assert_equal(<span class="number">3</span>, counter)
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> test_after_removing_all_data_it_gets_empty()
+    double_queue:push_back(<span class="string">"apple"</span>)
+    double_queue:push_back(<span class="string">"test"</span>)
+    double_queue:push_back(<span class="string">"pineapple"</span>)
+    double_queue:push_back(<span class="string">"end"</span>)
+
+    assert_false(double_queue:is_empty())
+
+    double_queue:remove(<span class="string">"apple"</span>)
+    double_queue:remove(<span class="string">"test"</span>)
+    double_queue:remove(<span class="string">"pineapple"</span>)
+    double_queue:remove(<span class="string">"end"</span>)
+   
+    assert_true(double_queue:is_empty())
+    <span class="keyword">local</span> counter = <span class="number">0</span>
+    <span class="keyword">for</span> data <span class="keyword">in</span> double_queue:get_iterator() <span class="keyword">do</span>
+        counter = counter + <span class="number">1</span>
+    <span class="keyword">end</span>
+    assert_equal(<span class="number">0</span>, counter)
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> test_if_some_data_is_pushed_twice_it_will_be_inserted_only_once()
+    double_queue:push_back(<span class="string">"apple"</span>)
+    double_queue:push_back(<span class="string">"apple"</span>)
+    <span class="keyword">local</span> counter = <span class="number">0</span>
+    <span class="keyword">for</span> data <span class="keyword">in</span> double_queue:get_iterator() <span class="keyword">do</span>
+        counter = counter + <span class="number">1</span>
+    <span class="keyword">end</span>
+    assert_equal(<span class="number">1</span>, counter)
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> test_if_some_data_is_pushed_twice_the_position_of_the_first_push_remains()
+    double_queue:push_back(<span class="string">"apple"</span>)
+    double_queue:push_back(<span class="string">"test"</span>)
+    double_queue:push_back(<span class="string">"pineapple"</span>)
+    double_queue:push_back(<span class="string">"apple"</span>)
+
+    assert_false(double_queue:is_empty())
+
+    <span class="keyword">local</span> counter = <span class="number">0</span>
+    <span class="keyword">for</span> data <span class="keyword">in</span> double_queue:get_iterator() <span class="keyword">do</span>
+        counter = counter + <span class="number">1</span>
+        <span class="keyword">if</span>(counter == <span class="number">1</span>) <span class="keyword">then</span>
+            assert_equal(<span class="string">"apple"</span>, data)
+        <span class="keyword">elseif</span>(counter == <span class="number">2</span>) <span class="keyword">then</span>
+            assert_equal(<span class="string">"test"</span>, data)
+        <span class="keyword">else</span>
+            assert_equal(<span class="string">"pineapple"</span>, data)
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+    assert_equal(<span class="number">3</span>, counter)
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> test_iteration_occurs_according_to_the_order_elements_where_inserted()
+    double_queue:push_back(<span class="number">3</span>)
+    double_queue:push_back(<span class="number">4</span>)
+    double_queue:push_back(<span class="number">5</span>)
+    double_queue:push_front(<span class="number">2</span>)
+    double_queue:push_front(<span class="number">1</span>)
+
+    <span class="keyword">local</span> counter = <span class="number">1</span>
+    <span class="keyword">for</span> data <span class="keyword">in</span> double_queue:get_iterator() <span class="keyword">do</span>
+        assert_equal(counter, data)
+        counter = counter + <span class="number">1</span>
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> test_all_data_pushed_is_acessed_on_iteration()
+    double_queue:push_back(<span class="string">"apple"</span>)
+    double_queue:push_back(<span class="string">"coconut"</span>)
+    double_queue:push_back(<span class="string">"pineapple"</span>)
+
+    assert_false(double_queue:is_empty())
+
+    <span class="keyword">local</span> counter = <span class="number">0</span>
+    <span class="keyword">for</span> data <span class="keyword">in</span> double_queue:get_iterator() <span class="keyword">do</span>
+        counter = counter + <span class="number">1</span>
+        <span class="keyword">if</span>(counter == <span class="number">1</span>) <span class="keyword">then</span>
+            assert_equal(<span class="string">"apple"</span>, data)
+        <span class="keyword">elseif</span>(counter == <span class="number">2</span>) <span class="keyword">then</span>
+            assert_equal(<span class="string">"coconut"</span>, data)
+        <span class="keyword">else</span>
+            assert_equal(<span class="string">"pineapple"</span>, data)
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+    assert_equal(<span class="number">3</span>, counter)
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> test_if_you_remove_the_same_data_twice_nothing_happens()
+    double_queue:push_back(<span class="string">"apple"</span>)
+    assert_false(double_queue:is_empty())
+    double_queue:remove(<span class="string">"apple"</span>)
+    assert_true(double_queue:is_empty())
+    double_queue:remove(<span class="string">"apple"</span>)
+    assert_true(double_queue:is_empty())
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> test_if_you_remove_data_not_inserted_on_the_set_nothing_happens()
+    double_queue:push_back(<span class="string">"apple"</span>)
+    assert_false(double_queue:is_empty())
+    double_queue:remove(<span class="string">"coconut"</span>)
+    assert_false(double_queue:is_empty())
+    double_queue:remove(<span class="string">"apple"</span>)
+    assert_true(double_queue:is_empty())
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> test_if_you_remove_nil_nothing_happens()
+    double_queue:push_back(<span class="string">"apple"</span>)
+    assert_false(double_queue:is_empty())
+    double_queue:remove(<span class="keyword">nil</span>)
+    assert_false(double_queue:is_empty())
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> test_if_you_remove_data_from_the_middle_and_insert_it_on_the_front_it_stays_on_the_front()
+    double_queue:push_back(<span class="string">"apple"</span>)
+    double_queue:push_back(<span class="string">"coconut"</span>)
+    double_queue:push_back(<span class="string">"pineapple"</span>)
+
+    double_queue:remove(<span class="string">"coconut"</span>)
+    double_queue:push_front(<span class="string">"coconut"</span>)
+
+    <span class="keyword">local</span> counter = <span class="number">0</span>
+    <span class="keyword">for</span> data <span class="keyword">in</span> double_queue:get_iterator() <span class="keyword">do</span>
+        counter = counter + <span class="number">1</span>
+        <span class="keyword">if</span>(counter == <span class="number">1</span>) <span class="keyword">then</span>
+            assert_equal(<span class="string">"coconut"</span>, data)
+        <span class="keyword">elseif</span>(counter == <span class="number">2</span>) <span class="keyword">then</span>
+            assert_equal(<span class="string">"apple"</span>, data)
+        <span class="keyword">else</span>
+            assert_equal(<span class="string">"pineapple"</span>, data)
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+    assert_equal(<span class="number">3</span>, counter)
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> test_if_you_remove_data_from_the_middle_and_insert_it_on_the_back_it_stays_on_the_back()
+    double_queue:push_back(<span class="string">"apple"</span>)
+    double_queue:push_back(<span class="string">"coconut"</span>)
+    double_queue:push_back(<span class="string">"pineapple"</span>)
+
+    double_queue:remove(<span class="string">"coconut"</span>)
+    double_queue:push_back(<span class="string">"coconut"</span>)
+
+    <span class="keyword">local</span> counter = <span class="number">0</span>
+    <span class="keyword">for</span> data <span class="keyword">in</span> double_queue:get_iterator() <span class="keyword">do</span>
+        counter = counter + <span class="number">1</span>
+        <span class="keyword">if</span>(counter == <span class="number">1</span>) <span class="keyword">then</span>
+            assert_equal(<span class="string">"apple"</span>, data)
+        <span class="keyword">elseif</span>(counter == <span class="number">2</span>) <span class="keyword">then</span>
+            assert_equal(<span class="string">"pineapple"</span>, data)
+        <span class="keyword">else</span>
+            assert_equal(<span class="string">"coconut"</span>, data)
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+    assert_equal(<span class="number">3</span>, counter)
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> test_if_you_remove_data_from_the_front_and_insert_it_on_the_front_it_stays_on_the_front()
+    double_queue:push_back(<span class="string">"apple"</span>)
+    double_queue:push_back(<span class="string">"coconut"</span>)
+    double_queue:push_back(<span class="string">"pineapple"</span>)
+
+    double_queue:remove(<span class="string">"apple"</span>)
+    double_queue:push_front(<span class="string">"apple"</span>)
+
+    <span class="keyword">local</span> counter = <span class="number">0</span>
+    <span class="keyword">for</span> data <span class="keyword">in</span> double_queue:get_iterator() <span class="keyword">do</span>
+        counter = counter + <span class="number">1</span>
+        <span class="keyword">if</span>(counter == <span class="number">1</span>) <span class="keyword">then</span>
+            assert_equal(<span class="string">"apple"</span>, data)
+        <span class="keyword">elseif</span>(counter == <span class="number">2</span>) <span class="keyword">then</span>
+            assert_equal(<span class="string">"coconut"</span>, data)
+        <span class="keyword">else</span>
+            assert_equal(<span class="string">"pineapple"</span>, data)
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+    assert_equal(<span class="number">3</span>, counter)
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> test_if_you_remove_data_from_the_front_and_insert_it_on_the_back_it_stays_on_the_back()
+    double_queue:push_back(<span class="string">"apple"</span>)
+    double_queue:push_back(<span class="string">"coconut"</span>)
+    double_queue:push_back(<span class="string">"pineapple"</span>)
+
+    double_queue:remove(<span class="string">"apple"</span>)
+    double_queue:push_back(<span class="string">"apple"</span>)
+
+    <span class="keyword">local</span> counter = <span class="number">0</span>
+    <span class="keyword">for</span> data <span class="keyword">in</span> double_queue:get_iterator() <span class="keyword">do</span>
+        counter = counter + <span class="number">1</span>
+        <span class="keyword">if</span>(counter == <span class="number">1</span>) <span class="keyword">then</span>
+            assert_equal(<span class="string">"coconut"</span>, data)
+        <span class="keyword">elseif</span>(counter == <span class="number">2</span>) <span class="keyword">then</span>
+            assert_equal(<span class="string">"pineapple"</span>, data)
+        <span class="keyword">else</span>
+            assert_equal(<span class="string">"apple"</span>, data)
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+    assert_equal(<span class="number">3</span>, counter)
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> test_if_you_remove_data_from_the_back_and_insert_it_on_the_front_it_stays_on_the_front()
+    double_queue:push_back(<span class="string">"apple"</span>)
+    double_queue:push_back(<span class="string">"coconut"</span>)
+    double_queue:push_back(<span class="string">"pineapple"</span>)
+
+    double_queue:remove(<span class="string">"pineapple"</span>)
+    double_queue:push_front(<span class="string">"pineapple"</span>)
+
+    <span class="keyword">local</span> counter = <span class="number">0</span>
+    <span class="keyword">for</span> data <span class="keyword">in</span> double_queue:get_iterator() <span class="keyword">do</span>
+        counter = counter + <span class="number">1</span>
+        <span class="keyword">if</span>(counter == <span class="number">1</span>) <span class="keyword">then</span>
+            assert_equal(<span class="string">"pineapple"</span>, data)
+        <span class="keyword">elseif</span>(counter == <span class="number">2</span>) <span class="keyword">then</span>
+            assert_equal(<span class="string">"apple"</span>, data)
+        <span class="keyword">else</span>
+            assert_equal(<span class="string">"coconut"</span>, data)
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+    assert_equal(<span class="number">3</span>, counter)
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> test_if_you_remove_data_from_the_back_and_insert_it_on_the_back_it_stays_on_the_back()
+    double_queue:push_back(<span class="string">"apple"</span>)
+    double_queue:push_back(<span class="string">"coconut"</span>)
+    double_queue:push_back(<span class="string">"pineapple"</span>)
+
+    double_queue:remove(<span class="string">"pineapple"</span>)
+    double_queue:push_back(<span class="string">"pineapple"</span>)
+
+    <span class="keyword">local</span> counter = <span class="number">0</span>
+    <span class="keyword">for</span> data <span class="keyword">in</span> double_queue:get_iterator() <span class="keyword">do</span>
+        counter = counter + <span class="number">1</span>
+        <span class="keyword">if</span>(counter == <span class="number">1</span>) <span class="keyword">then</span>
+            assert_equal(<span class="string">"apple"</span>, data)
+        <span class="keyword">elseif</span>(counter == <span class="number">2</span>) <span class="keyword">then</span>
+            assert_equal(<span class="string">"coconut"</span>, data)
+        <span class="keyword">else</span>
+            assert_equal(<span class="string">"pineapple"</span>, data)
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+    assert_equal(<span class="number">3</span>, counter)
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> test_after_it_gets_empty_it_can_be_used_again()
+    double_queue:push_back(<span class="number">1</span>)
+    double_queue:push_back(<span class="number">2</span>)
+    double_queue:push_back(<span class="number">3</span>)
+
+    <span class="keyword">local</span> counter = <span class="number">1</span>
+    <span class="keyword">for</span> data <span class="keyword">in</span> double_queue:get_iterator() <span class="keyword">do</span>
+        assert_equal(counter, data)
+        counter = counter + <span class="number">1</span>
+    <span class="keyword">end</span>
+    double_queue:remove(<span class="number">2</span>)
+    double_queue:remove(<span class="number">1</span>)
+    double_queue:remove(<span class="number">3</span>)
+
+    assert_true(double_queue:is_empty())
+
+    double_queue:push_front(<span class="number">1</span>)
+    double_queue:push_front(<span class="number">2</span>)
+    double_queue:push_front(<span class="number">3</span>)
+
+    assert_false(double_queue:is_empty())
+
+    counter = <span class="number">3</span>
+    <span class="keyword">for</span> data <span class="keyword">in</span> double_queue:get_iterator() <span class="keyword">do</span>
+        assert_equal(counter, data)
+        counter = counter - <span class="number">1</span>
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> test_if_you_set_queue_to_nil_the_iterator_keep_working()
+    <span class="keyword">for</span> i=<span class="number">1</span>,<span class="number">100</span> <span class="keyword">do</span>
+        double_queue:push_back(<span class="string">"item b"</span>..i)
+        double_queue:push_front(<span class="string">"item f"</span>..i)
+    <span class="keyword">end</span>
+
+    <span class="keyword">for</span> data <span class="keyword">in</span> double_queue:get_iterator() <span class="keyword">do</span>
+        double_queue = <span class="keyword">nil</span>
+        assert_not_nil(data)
+        <span class="global">collectgarbage</span>(<span class="string">"collect"</span>)
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> test_if_you_set_nested_queue_to_nil_the_iterator_of_nested_queue_keep_working()
+    <span class="keyword">for</span> i=<span class="number">1</span>,<span class="number">10</span> <span class="keyword">do</span>
+        <span class="keyword">local</span> queue = DoubleQueue.new()
+        <span class="keyword">for</span> j=<span class="number">1</span>,<span class="number">100</span> <span class="keyword">do</span>
+            queue:push_back(<span class="string">"item b"</span>..i)
+            queue:push_front(<span class="string">"item f"</span>..i)
+        <span class="keyword">end</span> 
+        double_queue:push_back(queue)
+    <span class="keyword">end</span>
+
+    <span class="keyword">for</span> queue <span class="keyword">in</span> double_queue:get_iterator() <span class="keyword">do</span>
+        double_queue = <span class="keyword">nil</span>
+        assert_not_nil(queue)
+        <span class="keyword">for</span> data <span class="keyword">in</span> queue:get_iterator() <span class="keyword">do</span>
+            queue = <span class="keyword">nil</span>
+            assert_not_nil(data)
+            <span class="global">collectgarbage</span>(<span class="string">"collect"</span>)
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+lunit.main()
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.2</a></i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>

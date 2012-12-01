@@ -1,0 +1,542 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>LuaNotify Documentation</title>
+    <link rel="stylesheet" href="../ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>LuaNotify</h1>
+
+<ul>
+  <li><a href="../index.html">Index</a></li>
+</ul>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Functions">Functions</a></li>
+</ul>
+
+
+<h2>Modules</h2>
+<ul>
+  <li><a href="../modules/notify.double-queue.html">notify.double-queue</a></li>
+  <li><strong>notify.event</strong></li>
+  <li><a href="../modules/notify.signal.html">notify.signal</a></li>
+</ul>
+<h2>Topics</h2>
+<ul>
+  <li><a href="../topics/01-introduction.md.html">01-introduction.md</a></li>
+</ul>
+<h2>Examples</h2>
+<ul>
+  <li><a href="../examples/double-queue.lua.html">double-queue.lua</a></li>
+  <li><a href="../examples/event.lua.html">event.lua</a></li>
+  <li><a href="../examples/signal.lua.html">signal.lua</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Module <code>notify.event</code></h1>
+
+<p>This module aims to build a generic hierarchic event system.</p>
+<p> The hierarchic model uses string event names to define what event are you working with.<br/>
+</p>
+
+<p> For example:<br/>
+</p>
+
+<ul>
+<li>&ldquo;event&rdquo;              &ndash;> Just a normal event.<br/>
+</li>
+<li>&ldquo;event:subevent&rdquo;     &ndash;> Using the subevent feature.<br/>
+</li>
+</ul>
+
+
+<p> The &ldquo;:&rdquo; is what defines that you are using hierarchic events,
+ every &ldquo;:&rdquo; you put is a new hierarchic level.<br/>
+</p>
+
+<p> When emiting &ldquo;event:subevent&rdquo;, everyone connected at &ldquo;event&rdquo; and &ldquo;event:subevent&rdquo;
+ is going to be notified. When emitting &ldquo;event&rdquo;, only the ones connected at &ldquo;event&rdquo; are
+ going to be notified. <br/>
+</p>
+
+<p> Using this hierarchical structure it is easy to be notified only when a specific event happens
+ or when a whole bunch of events inside a category happens. All events can be expressed on a tree,
+ where a node is a event, and you can connect,add a pre emit, add a post emit,
+ disconnect, block, unblock, emit, on any node of the tree.  <br/>
+</p>
+
+<h2><a href="#Functions">Functions</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#Event.new">Event.new&nbsp;()</a></td>
+	<td class="summary">Creates a new Event object.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#EventObject:connect">EventObject:connect&nbsp;(event_name, handler_function)</a></td>
+	<td class="summary">Connects a handler function on this event.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#EventObject:disconnect">EventObject:disconnect&nbsp;(event_name, handler_function)</a></td>
+	<td class="summary">Disconnects a handler function on this event.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#EventObject:unblock">EventObject:unblock&nbsp;(event_name, handler_function)</a></td>
+	<td class="summary">Unblocks the handler function from the given event.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#EventObject:emit">EventObject:emit&nbsp;(event_name, ...)</a></td>
+	<td class="summary">Emits an event and all handler functions connected to it will be called.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#EventObject:emit_with_accumulator">EventObject:emit_with_accumulator&nbsp;(event_name, accumulator, ...)</a></td>
+	<td class="summary">Typical emission discards handlers return values completely.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#EventObject:add_pre_emit">EventObject:add_pre_emit&nbsp;(event_name, pre_emit_func)</a></td>
+	<td class="summary">Adds a pre_emit func, pre_emit functions can&rsquo;t be blocked, only added or removed.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#EventObject:remove_pre_emit">EventObject:remove_pre_emit&nbsp;(event_name, pre_emit_func)</a></td>
+	<td class="summary">Removes a pre-emit func from the given event.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#EventObject:add_post_emit">EventObject:add_post_emit&nbsp;(event_name, post_emit_func)</a></td>
+	<td class="summary">Adds a post_emit function, post_emit functions can&rsquo;t be blocked, only added or removed, 
+ they can&rsquo;t have their return collected by accumulators, they will not receive any data passed 
+ on the emission and they are always called after ALL handlers where called.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#EventObject:remove_post_emit">EventObject:remove_post_emit&nbsp;(event_name, post_emit_func)</a></td>
+	<td class="summary">Removes a post-emit func from the given event.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#EventObject:stop">EventObject:stop&nbsp;()</a></td>
+	<td class="summary">Has effect only during a emission and will stop only this particular emission of the event.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#EventObject:clear">EventObject:clear&nbsp;(event_name)</a></td>
+	<td class="summary">Removes all pre/post-emits and handlers from the given event_name.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Event.get_global_event">Event.get_global_event&nbsp;()</a></td>
+	<td class="summary">Always returns the same Event instance, this way is easy to share the same Event object across different modules.</td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2><a name="Functions"></a>Functions</h2>
+    
+    <dl class="function">
+    <dt>
+    <a name = "Event.new"></a>
+    <strong>Event.new&nbsp;()</strong>
+    </dt>
+    <dd>
+    Creates a new Event object. 
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+        The new Event object.
+    </ol>
+
+
+</dd>
+    <dt>
+    <a name = "EventObject:connect"></a>
+    <strong>EventObject:connect&nbsp;(event_name, handler_function)</strong>
+    </dt>
+    <dd>
+    Connects a handler function on this event. 
+ If any subevent is emitted, this handler will be called too.
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>event_name</em></code>: <pre><code>   - The event name.
+</code></pre>
+</li>
+       <li><code><em>handler_function</em></code>: <ul>
+<li>The function that will be called when the event_name is emitted.</li>
+</ul>
+
+</li>
+    </ul>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "EventObject:disconnect"></a>
+    <strong>EventObject:disconnect&nbsp;(event_name, handler_function)</strong>
+    </dt>
+    <dd>
+    Disconnects a handler function on this event. 
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>event_name</em></code>: <pre><code>   - The event name.
+</code></pre>
+</li>
+       <li><code><em>handler_function</em></code>: <ul>
+<li>The function that will be disconnected.</li>
+</ul>
+
+</li>
+    </ul>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "EventObject:unblock"></a>
+    <strong>EventObject:unblock&nbsp;(event_name, handler_function)</strong>
+    </dt>
+    <dd>
+    <p>Unblocks the handler function from the given event. 
+ The calls to unblock must match the calls to block.</p>
+
+<p> Example:</p>
+
+<pre><code>local Event = require "notify.event"
+local event = Event.new()
+
+local function handler1(arg)
+    print(arg)
+end
+
+event:connect("mouse", handler1)
+event:emit("mouse", "example") -- example gets printed.
+
+event:block("mouse", handler1);
+event:emit("mouse", "example") -- nothing gets printed.
+
+event:block("mouse", handler1);
+event:emit("mouse", "example") -- nothing gets printed.
+
+event:unblock("mouse", handler1);
+event:emit("mouse", "example") -- nothing gets printed.
+event:unblock("mouse", handler1);
+event:emit("mouse", "example") -- example gets printed.
+</code></pre>
+
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>event_name</em></code>: <ul>
+<li>The event name.</li>
+</ul>
+
+</li>
+       <li><code><em>handler_function</em></code>: <ul>
+<li>The handler function that will be unblocked.</li>
+</ul>
+
+</li>
+    </ul>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "EventObject:emit"></a>
+    <strong>EventObject:emit&nbsp;(event_name, ...)</strong>
+    </dt>
+    <dd>
+    <p>Emits an event and all handler functions connected to it will be called. 
+ Emiting the event &ldquo;event1::event2::event3&rdquo; will call the handlers connected
+ on the following events, on this order:  <br/>
+</p>
+
+<ul>
+<li>event1</li>
+<li>event1:event2</li>
+<li>event1:event2:event3</li>
+</ul>
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>event_name</em></code>: <ul>
+<li>The event name.</li>
+</ul>
+
+</li>
+       <li><code><em>...</em></code>: <pre><code>    - A optional list of parameters, they will be repassed to the handler functions connected to this event.
+</code></pre>
+</li>
+    </ul>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "EventObject:emit_with_accumulator"></a>
+    <strong>EventObject:emit_with_accumulator&nbsp;(event_name, accumulator, ...)</strong>
+    </dt>
+    <dd>
+    Typical emission discards handlers return values completely.<br/>
+ This is most often what you need: just inform the world about something. 
+ However, sometimes you need a way to get feedback. 
+ For instance, you may want to ask: “is this value acceptable ?”
+ This is what accumulators are for. Accumulators are specified to events at emission time. 
+ They can combine, alter or discard handlers return values, post-process them or even stop emission. 
+ Since a handler can return multiple values, accumulators can receive multiple args too. 
+ Following Lua flexible style we give the user the freedom to do whatever he wants with accumulators. 
+ If you are using the hierarchic event system the behaviour of handlers calling is similar to the emit function.
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>event_name</em></code>: <ul>
+<li>The event name.</li>
+</ul>
+
+</li>
+       <li><code><em>accumulator</em></code>: <ul>
+<li>Function that will receive handlers results or a table to accumulate 
+
+<pre><code>               all the handlers returned values.
+</code></pre></li>
+</ul>
+
+</li>
+       <li><code><em>...</em></code>: <pre><code>     - A optional list of parameters, they will be repassed to the handler
+                  functions connected to this signal.
+</code></pre>
+</li>
+    </ul>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "EventObject:add_pre_emit"></a>
+    <strong>EventObject:add_pre_emit&nbsp;(event_name, pre_emit_func)</strong>
+    </dt>
+    <dd>
+    Adds a pre_emit func, pre_emit functions can&rsquo;t be blocked, only added or removed.<br/>
+ They can&rsquo;t have their return collected by accumulators, they will not receive any data 
+ passed on the emission and they are always called before ANY handler is called. 
+ This is useful when you want to perform some global task before handling an event, 
+ like opening a socket that the handlers might need to use or a opening a database. 
+ pre_emit functions can make sure everything is ok before handling an event, reducing 
+ the need to do this check_ups inside the handler functions itself (sometimes multiple times). 
+ They are called on a queue (FIFO) policy based on the order they added. 
+ When using hierarchy, pre_emission happen top-bottom. For example, with a mouse::button1 event, 
+ first the pre_emit functions on mouse will be called, then mouse::button1 post_emit functions will be called.
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>event_name</em></code>: <pre><code>- The event name.
+</code></pre>
+</li>
+       <li><code><em>pre_emit_func</em></code>: <ul>
+<li>The pre_emit function.</li>
+</ul>
+
+</li>
+    </ul>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "EventObject:remove_pre_emit"></a>
+    <strong>EventObject:remove_pre_emit&nbsp;(event_name, pre_emit_func)</strong>
+    </dt>
+    <dd>
+    Removes a pre-emit func from the given event. 
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>event_name</em></code>: <ul>
+<li>The event name.</li>
+</ul>
+
+</li>
+       <li><code><em>pre_emit_func</em></code>: <ul>
+<li>The pre_emit function.</li>
+</ul>
+
+</li>
+    </ul>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "EventObject:add_post_emit"></a>
+    <strong>EventObject:add_post_emit&nbsp;(event_name, post_emit_func)</strong>
+    </dt>
+    <dd>
+    Adds a post_emit function, post_emit functions can&rsquo;t be blocked, only added or removed, 
+ they can&rsquo;t have their return collected by accumulators, they will not receive any data passed 
+ on the emission and they are always called after ALL handlers where called.<br/>
+ This is useful when you want to perform some global task after handling an event, 
+ like closing a socket or a database that the handlers might need to use or do some cleanup. 
+ post_emit functions can make sure everything is released after handling an event, reducing the need 
+ to do this check_ups inside some handler function, since some resources can be shared by multiple handlers. 
+ They are called on a stack (LIFO) policy  based on the order they added. When using hierarchy, 
+ post_emission happen bottom-top. For example, with a mouse::button1 event, first the post_emit 
+ functions on mouse::button1 will be called, then mouse post_emit functions will be called.
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>event_name</em></code>: <ul>
+<li>The event name.</li>
+</ul>
+
+</li>
+       <li><code><em>post_emit_func</em></code>: <ul>
+<li>The post_emit function.</li>
+</ul>
+
+</li>
+    </ul>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "EventObject:remove_post_emit"></a>
+    <strong>EventObject:remove_post_emit&nbsp;(event_name, post_emit_func)</strong>
+    </dt>
+    <dd>
+    Removes a post-emit func from the given event. 
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>event_name</em></code>: <ul>
+<li>The event name.</li>
+</ul>
+
+</li>
+       <li><code><em>post_emit_func</em></code>: <ul>
+<li>The post_emit function.</li>
+</ul>
+
+</li>
+    </ul>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "EventObject:stop"></a>
+    <strong>EventObject:stop&nbsp;()</strong>
+    </dt>
+    <dd>
+    <p>Has effect only during a emission and will stop only this particular emission of the event. 
+ Usually called inside a pre-emit (when a condition fail) or on any handler.</p>
+
+<p> Example:</p>
+
+<pre><code>local Event = require "notify.event"
+local event = Event.new()
+
+function handler1()
+    print("handler1")
+    event.stop();
+end
+
+function handler2()
+    print("2")
+end
+
+event:connect("mouse", handler1)
+event:connect("mouse::click", handler2)
+
+event:emit("mouse::click") --handler2 never gets printed because handler1 always stops the emission
+</code></pre>
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "EventObject:clear"></a>
+    <strong>EventObject:clear&nbsp;(event_name)</strong>
+    </dt>
+    <dd>
+    Removes all pre/post-emits and handlers from the given event_name. 
+ If no name is given all pre/post-emits and handlers will be removed.
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>event_name</em></code>: <ul>
+<li>The name of the event that will be cleared, or nil to clear all events.</li>
+</ul>
+
+</li>
+    </ul>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Event.get_global_event"></a>
+    <strong>Event.get_global_event&nbsp;()</strong>
+    </dt>
+    <dd>
+    Always returns the same Event instance, this way is easy to share the same Event object across different modules. 
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+        An EventObject instance.
+    </ol>
+
+
+</dd>
+</dl>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.2</a></i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>

@@ -1,0 +1,1423 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>LuaNotify Documentation</title>
+    <link rel="stylesheet" href="../ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>LuaNotify</h1>
+
+<ul>
+  <li><a href="../index.html">Index</a></li>
+</ul>
+
+
+
+<h2>Examples</h2>
+<ul>
+  <li><a href="../examples/double-queue.lua.html">double-queue.lua</a></li>
+  <li><strong>event.lua</strong></li>
+  <li><a href="../examples/signal.lua.html">signal.lua</a></li>
+</ul>
+<h2>Modules</h2>
+<ul>
+  <li><a href="../modules/notify.double-queue.html">notify.double-queue</a></li>
+  <li><a href="../modules/notify.event.html">notify.event</a></li>
+  <li><a href="../modules/notify.signal.html">notify.signal</a></li>
+</ul>
+<h2>Topics</h2>
+<ul>
+  <li><a href="../topics/01-introduction.md.html">01-introduction.md</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Example <code>event.lua</code></h1>
+
+    <pre>
+<span class="comment">--------------------------------------------------------------------------------
+</span>
+<span class="comment">-- Copyright (C) 2010 Guilherme Silveira &lt;xguiga@gmail.com&gt;
+</span><span class="comment">-- Copyright (C) 2010 Tiago Katcipis &lt;tiagokatcipis@gmail.com&gt;
+</span><span class="comment">-- Copyright (C) 2010 Paulo Pizarro  &lt;paulo.pizarro@gmail.com&gt;
+</span>
+<span class="comment">-- @author Guilherme Silveira  &lt;xguiga@gmail.com&gt;
+</span><span class="comment">-- @author Paulo Pizarro  &lt;paulo.pizarro@gmail.com&gt;
+</span><span class="comment">-- @author Tiago Katcipis &lt;tiagokatcipis@gmail.com&gt;
+</span> 
+<span class="comment">-- This file is part of LuaNotify.
+</span> 
+<span class="comment">-- LuaNotify is free software: you can redistribute it and/or modify
+</span><span class="comment">-- it under the terms of the GNU Lesser General Public License as published by
+</span><span class="comment">-- the Free Software Foundation, either version 3 of the License, or
+</span><span class="comment">-- (at your option) any later version.
+</span> 
+<span class="comment">-- LuaNotify is distributed in the hope that it will be useful,
+</span><span class="comment">-- but WITHOUT ANY WARRANTY; without even the implied warranty of
+</span><span class="comment">-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+</span><span class="comment">-- GNU Lesser General Public License for more details.
+</span> 
+<span class="comment">-- You should have received a copy of the GNU Lesser General Public License
+</span><span class="comment">-- along with LuaNotify.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+</span><span class="comment">---------------------------------------------------------------------------------
+</span><span class="global">package</span>.path = <span class="global">package</span>.path..<span class="string">";../?.lua"</span>
+
+<span class="global">require</span> <span class="string">"lunit"</span>
+
+<span class="global">module</span>(<span class="string">"event_testcase"</span>, lunit.testcase, <span class="global">package</span>.seeall)
+
+<span class="keyword">local</span> Event = <span class="global">require</span> <span class="string">"notify.event"</span>
+<span class="keyword">local</span> event = <span class="keyword">nil</span>
+
+<span class="keyword">function</span> setUp()
+    event = Event.new()
+    call_counter = <span class="number">0</span>
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> tearDown()
+    event = <span class="keyword">nil</span>
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> test_if_a_handler_function_is_connected_to_a_event_it_will_always_be_called_when_that_event_emission_occurs()
+    <span class="keyword">local</span> handler = <span class="keyword">function</span> (name) call_counter = call_counter + <span class="number">1</span> <span class="keyword">end</span>
+
+    event:connect(<span class="string">"luanotify"</span>, handler)
+    event:connect(<span class="string">"luanotify:event"</span>, handler)
+    event:connect(<span class="string">"luanotify:event:test"</span>, handler)
+    assert_equal(<span class="number">0</span>, call_counter)
+    event:emit(<span class="string">"luanotify"</span>)
+    assert_equal(<span class="number">1</span>, call_counter)
+    event:emit(<span class="string">"luanotify:event"</span>)
+    assert_equal(<span class="number">3</span>, call_counter)
+    event:emit(<span class="string">"luanotify:event:test"</span>)
+    assert_equal(<span class="number">6</span>, call_counter)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_you_can_have_one_handler_connected_only_on_a_subevent()
+    <span class="keyword">local</span> handler = <span class="keyword">function</span> (name) call_counter = call_counter + <span class="number">1</span> <span class="keyword">end</span>
+
+    event:connect(<span class="string">"luanotify:event:test"</span>, handler)
+    assert_equal(<span class="number">0</span>, call_counter)
+    event:emit(<span class="string">"luanotify:event:test"</span>)
+    assert_equal(<span class="number">1</span>, call_counter)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_if_there_is_no_handler_connected_to_an_event_the_emission_of_the_event_does_nothing()
+    assert_equal(<span class="number">0</span>, call_counter)
+    event:emit(<span class="string">"luanotify"</span>)
+    assert_equal(<span class="number">0</span>, call_counter)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_handlers_connected_to_a_event_are_called_on_a_queue_behavior()
+    <span class="keyword">local</span> handler1 = <span class="keyword">function</span> (name)
+                   assert_equal(<span class="number">0</span>, call_counter)
+                   call_counter = call_counter + <span class="number">1</span>
+               <span class="keyword">end</span>
+
+    <span class="keyword">local</span> handler2 = <span class="keyword">function</span> (name)
+                   assert_equal(<span class="number">1</span>, call_counter)
+                   call_counter = call_counter + <span class="number">1</span>
+               <span class="keyword">end</span>
+
+    <span class="keyword">local</span> handler3 = <span class="keyword">function</span> (name)
+                   assert_equal(<span class="number">2</span>, call_counter)
+                   call_counter = call_counter + <span class="number">1</span>
+               <span class="keyword">end</span>
+
+     event:connect(<span class="string">"luanotify:event:test"</span>,handler1)
+     event:connect(<span class="string">"luanotify:event:test"</span>,handler2)
+     event:connect(<span class="string">"luanotify:event:test"</span>,handler3)
+     event:emit(<span class="string">"luanotify:event:test"</span>)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_handlers_receive_all_the_data_that_is_passed_on_emission()
+    <span class="keyword">local</span> handler  = <span class="keyword">function</span> (arg1, arg2, arg3)
+                   assert_equal(<span class="string">"luanotify"</span>, arg1)
+                   assert_equal(<span class="string">"apple"</span>, arg2)
+                   assert_equal(<span class="string">"pineapple"</span>, arg3)
+               <span class="keyword">end</span>
+
+    event:connect(<span class="string">"luanotify"</span>, handler)
+    event:emit(<span class="string">"luanotify"</span>, <span class="string">"apple"</span>, <span class="string">"pineapple"</span>)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_the_first_parameter_given_to_a_handler_on_emission_is_always_the_name_of_the_emitted_event()
+    <span class="keyword">local</span> handler  = <span class="keyword">function</span> (arg1, arg2)
+                   assert_equal(<span class="string">"luanotify:event"</span>, arg1)
+               <span class="keyword">end</span>
+
+    event:connect(<span class="string">"luanotify:event"</span>, handler)
+    event:emit(<span class="string">"luanotify:event"</span>, <span class="string">"pineapple"</span>)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_all_event_handlers_on_the_event_tree_receive_the_name_of_the_emitted_event_as_the_first_parameter()
+    <span class="keyword">local</span> event_name = { name = <span class="string">"luanotify:event:test"</span> }
+
+    <span class="keyword">local</span> handler1  = <span class="keyword">function</span> (arg1)
+                   assert_equal(event_name.name, arg1)
+               <span class="keyword">end</span>
+    <span class="keyword">local</span> handler2  = <span class="keyword">function</span> (arg1)
+                   assert_equal(event_name.name, arg1)
+               <span class="keyword">end</span>
+    <span class="keyword">local</span> handler3  = <span class="keyword">function</span> (arg1)
+                   assert_equal(event_name.name, arg1)
+               <span class="keyword">end</span>
+
+    event:connect(<span class="string">"luanotify"</span>, handler1)
+    event:connect(<span class="string">"luanotify:event"</span>, handler2)
+    event:connect(<span class="string">"luanotify:event:test"</span>, handler3)
+
+    event:emit(event_name.name)
+    event_name.name = <span class="string">"luanotify:event"</span>
+    event:emit(event_name.name)
+    event_name.name = <span class="string">"luanotify"</span>
+    event:emit(event_name.name)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_handlers_receive_all_the_data_that_is_passed_on_emission_on_the_order_it_was_on_emission_call()
+    <span class="keyword">local</span> handler1  = <span class="keyword">function</span> (name, arg1)
+                   assert_equal(<span class="number">0</span>, call_counter)
+                   call_counter = call_counter + <span class="number">1</span>
+                   assert_equal(<span class="string">"luanotify:event:test"</span>, name)
+                   assert_equal(<span class="string">"pineapple"</span>, arg1)
+               <span class="keyword">end</span>
+    <span class="keyword">local</span> handler2  = <span class="keyword">function</span> (name, arg1)
+                   assert_equal(<span class="number">1</span>, call_counter)
+                   call_counter = call_counter + <span class="number">1</span>
+                   assert_equal(<span class="string">"luanotify:event:test"</span>, name)
+                   assert_equal(<span class="string">"pineapple"</span>, arg1)
+               <span class="keyword">end</span>
+    <span class="keyword">local</span> handler3  = <span class="keyword">function</span> (name, arg1)
+                   assert_equal(<span class="number">2</span>, call_counter)
+                   call_counter = call_counter + <span class="number">1</span>
+                   assert_equal(<span class="string">"luanotify:event:test"</span>, name)
+                   assert_equal(<span class="string">"pineapple"</span>, arg1)
+               <span class="keyword">end</span>
+
+    event:connect(<span class="string">"luanotify"</span>, handler1)
+    event:connect(<span class="string">"luanotify:event"</span>, handler2)
+    event:connect(<span class="string">"luanotify:event:test"</span>, handler3)
+    event:emit(<span class="string">"luanotify:event:test"</span>, <span class="string">"pineapple"</span>)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_if_the_same_handler_is_connected_multiple_times_to_the_same_event_it_will_be_called_only_once()
+    <span class="keyword">local</span> handler = <span class="keyword">function</span> (name)
+                  call_counter = call_counter + <span class="number">1</span>
+              <span class="keyword">end</span>
+
+    event:connect(<span class="string">"luanotify"</span>, handler)
+    event:connect(<span class="string">"luanotify"</span>, handler)
+    event:connect(<span class="string">"luanotify"</span>, handler)
+    event:emit(<span class="string">"luanotify"</span>)
+    assert_equal(<span class="number">1</span>, call_counter)
+    event:disconnect(<span class="string">"luanotify"</span>, handler)
+    event:emit(<span class="string">"luanotify"</span>)
+    assert_equal(<span class="number">1</span>, call_counter)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_the_same_handler_function_can_be_connected_to_different_events()
+    <span class="keyword">local</span> handler = <span class="keyword">function</span> (name) call_counter = call_counter + <span class="number">1</span> <span class="keyword">end</span>
+    <span class="keyword">local</span> event2 = Event.new()
+
+    event:connect(<span class="string">"luanotify:event:test1"</span>, handler)
+    event2:connect(<span class="string">"luanotify:event:test1"</span>, handler)
+
+    assert_equal(<span class="number">0</span>, call_counter)
+    event:emit(<span class="string">"luanotify:event:test1"</span>)
+    assert_equal(<span class="number">1</span>, call_counter)
+    event2:emit(<span class="string">"luanotify:event:test1"</span>)
+    assert_equal(<span class="number">2</span>, call_counter)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_the_differente_handler_function_can_be_connected_to_different_events_and_they_are_called_just_one_time()
+    <span class="keyword">local</span> handler = <span class="keyword">function</span> (name) call_counter = call_counter + <span class="number">1</span> <span class="keyword">end</span>
+    <span class="keyword">local</span> handler2 = <span class="keyword">function</span> (name) call_counter = call_counter + <span class="number">1</span> <span class="keyword">end</span>
+    <span class="keyword">local</span> event2 = Event.new()
+
+    event:connect(<span class="string">"luanotify:event:test1"</span>, handler)
+    event2:connect(<span class="string">"luanotify:event:test1"</span>, handler2)
+
+    assert_equal(<span class="number">0</span>, call_counter)
+    event:emit(<span class="string">"luanotify:event:test1"</span>)
+    assert_equal(<span class="number">1</span>, call_counter)
+    event2:emit(<span class="string">"luanotify:event:test1"</span>)
+    assert_equal(<span class="number">2</span>, call_counter)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_if_the_same_handler_is_connected_multiple_times_to_the_same_event_it_has_to_be_disconnected_only_once()
+    <span class="keyword">local</span> handler = <span class="keyword">function</span> (name)
+                  call_counter = call_counter + <span class="number">1</span>
+              <span class="keyword">end</span>
+
+    event:connect(<span class="string">"luanotify"</span>, handler)
+    event:connect(<span class="string">"luanotify"</span>, handler)
+    event:connect(<span class="string">"luanotify"</span>, handler)
+    event:emit(<span class="string">"luanotify"</span>)
+    assert_equal(<span class="number">1</span>, call_counter)
+    event:disconnect(<span class="string">"luanotify"</span>, handler)
+    event:emit(<span class="string">"luanotify"</span>)
+    assert_equal(<span class="number">1</span>, call_counter)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_if_you_disconnect_a_handler_from_a_event_that_it_is_not_connected_nothing_happens()
+    <span class="keyword">local</span> handler  = <span class="keyword">function</span> (name)
+                  assert_equal(<span class="number">0</span>, call_counter)
+                  call_counter = call_counter + <span class="number">1</span>
+               <span class="keyword">end</span>
+    event:disconnect(<span class="string">"luanotify"</span>, handler)
+    assert_equal(<span class="number">0</span>, call_counter)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_if_a_handler_is_disconnected_from_a_event_the_calling_order_of_the_remaining_handlers_wont_change()
+    <span class="keyword">local</span> handler1 = <span class="keyword">function</span> (name)
+                  assert_equal(<span class="number">0</span>, call_counter)
+                  call_counter = call_counter + <span class="number">1</span>
+               <span class="keyword">end</span>
+
+    <span class="keyword">local</span> handler2 = <span class="keyword">function</span> (name)
+                  assert_equal(<span class="number">1</span>, call_counter)
+                  call_counter = call_counter + <span class="number">1</span>
+               <span class="keyword">end</span>
+
+    <span class="keyword">local</span> handler3 = <span class="keyword">function</span> (name, offset)
+                  <span class="keyword">local</span> offset = offset <span class="keyword">or</span> <span class="number">0</span>
+                  assert_equal(<span class="number">2</span> - offset, call_counter)
+                  call_counter = call_counter + <span class="number">1</span>
+               <span class="keyword">end</span>
+
+    event:connect(<span class="string">"luanotify:event"</span>, handler1)
+    event:connect(<span class="string">"luanotify:event"</span>, handler2)
+    event:connect(<span class="string">"luanotify:event"</span>, handler3)
+    event:emit(<span class="string">"luanotify:event"</span>)
+
+    event:disconnect(<span class="string">"luanotify:event"</span>, handler2)
+    call_counter = <span class="number">0</span>
+    event:emit(<span class="string">"luanotify:event"</span>, <span class="number">1</span>)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_if_a_handler_is_disconnected_from_a_event_it_will_not_be_called_anymore_when_that_event_emits()
+    <span class="keyword">local</span> handler = <span class="keyword">function</span> (name)
+                  call_counter = call_counter + <span class="number">1</span>
+              <span class="keyword">end</span>
+
+    event:connect(<span class="string">"luanotify"</span>, handler)
+    event:connect(<span class="string">"luanotify"</span>, handler)
+    event:connect(<span class="string">"luanotify"</span>, handler)
+    event:emit(<span class="string">"luanotify"</span>)
+    assert_equal(<span class="number">1</span>, call_counter)
+    event:disconnect(<span class="string">"luanotify"</span>, handler)
+    event:emit(<span class="string">"luanotify"</span>)
+    assert_equal(<span class="number">1</span>, call_counter)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_the_handler_function_must_be_disconnected_from_the_exact_same_event_it_was_connected_not_parent_events()
+   <span class="keyword">local</span> handler = <span class="keyword">function</span> (name) call_counter = call_counter + <span class="number">1</span> <span class="keyword">end</span>
+
+    event:connect(<span class="string">"luanotify:event:test"</span>, handler)
+    assert_equal(<span class="number">0</span>, call_counter)
+    event:emit(<span class="string">"luanotify:event:test"</span>)
+    assert_equal(<span class="number">1</span>, call_counter)
+    event:disconnect(<span class="string">"luanotify:event"</span>, handler)
+    event:emit(<span class="string">"luanotify:event:test"</span>)
+    assert_equal(<span class="number">2</span>, call_counter)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_the_handler_function_must_be_disconnected_from_the_exact_same_event_it_was_connected_not_child_events()
+   <span class="keyword">local</span> handler = <span class="keyword">function</span> (name) call_counter = call_counter + <span class="number">1</span> <span class="keyword">end</span>
+
+    event:connect(<span class="string">"luanotify:event"</span>, handler)
+    assert_equal(<span class="number">0</span>, call_counter)
+    event:emit(<span class="string">"luanotify:event:test"</span>)
+    assert_equal(<span class="number">1</span>, call_counter)
+    event:disconnect(<span class="string">"luanotify:event:test"</span>, handler)
+    event:emit(<span class="string">"luanotify:event:test"</span>)
+    assert_equal(<span class="number">2</span>, call_counter)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_if_a_handler_got_blocked_it_wont_be_called_on_emission()
+    <span class="keyword">local</span> handler = <span class="keyword">function</span> (name) call_counter = call_counter + <span class="number">1</span> <span class="keyword">end</span>
+
+    event:connect(<span class="string">"luanotify:event"</span>, handler)
+    assert_equal(<span class="number">0</span>, call_counter)
+    event:emit(<span class="string">"luanotify:event"</span>)
+    assert_equal(<span class="number">1</span>, call_counter)
+    event:block(<span class="string">"luanotify:event"</span>, handler)
+    event:emit(<span class="string">"luanotify:event"</span>)
+    assert_equal(<span class="number">1</span>, call_counter)
+    event:emit(<span class="string">"luanotify:event"</span>)
+    assert_equal(<span class="number">1</span>, call_counter)
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> test_if_a_handler_doesnt_got_blocked_if_its_parent_was_blocked()
+    <span class="keyword">local</span> handler = <span class="keyword">function</span> (name) call_counter = call_counter + <span class="number">1</span> <span class="keyword">end</span>
+
+    event:connect(<span class="string">"luanotify:event"</span>, handler)
+    assert_equal(<span class="number">0</span>, call_counter)
+    event:emit(<span class="string">"luanotify:event"</span>)
+    assert_equal(<span class="number">1</span>, call_counter)
+    event:block(<span class="string">"luanotify"</span>, handler)
+    event:emit(<span class="string">"luanotify:event"</span>)
+    assert_equal(<span class="number">2</span>, call_counter)
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> test_if_you_block_a_disconnected_handler_nothing_happens()
+    <span class="keyword">local</span> handler = <span class="keyword">function</span> (name) call_counter = call_counter + <span class="number">1</span> <span class="keyword">end</span>
+    event:block(<span class="string">"luanotify:event"</span>, handler)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_if_you_unblock_a_disconnected_handler_nothing_happens()
+    <span class="keyword">local</span> handler = <span class="keyword">function</span> (name) call_counter = call_counter + <span class="number">1</span> <span class="keyword">end</span>
+    event:unblock(<span class="string">"luanotify:event"</span>, handler)
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> test_a_blocked_handler_can_be_unblocked()
+    <span class="keyword">local</span> handler = <span class="keyword">function</span> (name) 
+call_counter = call_counter + <span class="number">1</span> <span class="keyword">end</span>
+
+    event:connect(<span class="string">"luanotify:event"</span>, handler)
+    assert_equal(<span class="number">0</span>, call_counter)
+    event:emit(<span class="string">"luanotify:event"</span>)
+    assert_equal(<span class="number">1</span>, call_counter)
+    event:block(<span class="string">"luanotify:event"</span>, handler)
+    event:emit(<span class="string">"luanotify:event"</span>)
+    assert_equal(<span class="number">1</span>, call_counter)
+    event:unblock(<span class="string">"luanotify:event"</span>, handler)
+    event:emit(<span class="string">"luanotify:event"</span>)
+    assert_equal(<span class="number">2</span>, call_counter)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_a_blocked_handler_must_be_unblocked_on_the_same_event_it_was_blocked_not_parent_events()
+   <span class="keyword">local</span> handler = <span class="keyword">function</span> (name) call_counter = call_counter + <span class="number">1</span> <span class="keyword">end</span>
+
+    event:connect(<span class="string">"luanotify:event:test"</span>, handler)
+    assert_equal(<span class="number">0</span>, call_counter)
+    event:emit(<span class="string">"luanotify:event:test"</span>)
+    assert_equal(<span class="number">1</span>, call_counter)
+    event:block(<span class="string">"luanotify:event:test"</span>, handler)
+    event:emit(<span class="string">"luanotify:event:test"</span>)
+    assert_equal(<span class="number">1</span>, call_counter)
+    event:unblock(<span class="string">"luanotify:event"</span>, handler)
+    event:emit(<span class="string">"luanotify:event:test"</span>)
+    assert_equal(<span class="number">1</span>, call_counter)
+    event:unblock(<span class="string">"luanotify:event:test"</span>, handler)
+    event:emit(<span class="string">"luanotify:event:test"</span>)
+    assert_equal(<span class="number">2</span>, call_counter)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_a_blocked_handler_must_be_unblocked_on_the_same_event_it_was_blocked_not_child_events()
+   <span class="keyword">local</span> handler = <span class="keyword">function</span> (name) call_counter = call_counter + <span class="number">1</span> <span class="keyword">end</span>
+
+    event:connect(<span class="string">"luanotify:event"</span>, handler)
+    assert_equal(<span class="number">0</span>, call_counter)
+    event:emit(<span class="string">"luanotify:event:test"</span>)
+    assert_equal(<span class="number">1</span>, call_counter)
+    event:block(<span class="string">"luanotify:event"</span>, handler)
+    event:emit(<span class="string">"luanotify:event:test"</span>)
+    assert_equal(<span class="number">1</span>, call_counter)
+    event:unblock(<span class="string">"luanotify:event:test"</span>, handler)
+    event:emit(<span class="string">"luanotify:event:test"</span>)
+    assert_equal(<span class="number">1</span>, call_counter)
+    event:unblock(<span class="string">"luanotify:event"</span>, handler)
+    event:emit(<span class="string">"luanotify:event:test"</span>)
+    assert_equal(<span class="number">2</span>, call_counter)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_a_unblocked_handler_will_be_called_on_its_original_position()
+    <span class="keyword">local</span> handler1 = <span class="keyword">function</span> (name)
+                  assert_equal(<span class="number">0</span>, call_counter)
+                  call_counter = call_counter + <span class="number">1</span>
+               <span class="keyword">end</span>
+
+    <span class="keyword">local</span> handler2 = <span class="keyword">function</span> (name)
+                  assert_equal(<span class="number">1</span>, call_counter)
+                  call_counter = call_counter + <span class="number">1</span>
+               <span class="keyword">end</span>
+
+    <span class="keyword">local</span> handler3 = <span class="keyword">function</span> (name, offset)
+                  <span class="keyword">local</span> offset = offset <span class="keyword">or</span> <span class="number">0</span>
+                  assert_equal(<span class="number">2</span> - offset, call_counter)
+                  call_counter = call_counter + <span class="number">1</span>
+               <span class="keyword">end</span>
+
+    event:connect(<span class="string">"luanotify"</span>, handler1)
+    event:connect(<span class="string">"luanotify"</span>, handler2)
+    event:connect(<span class="string">"luanotify"</span>, handler3)
+    event:block(<span class="string">"luanotify"</span>, handler2)
+    event:emit(<span class="string">"luanotify"</span>, <span class="number">1</span>)
+
+    call_counter = <span class="number">0</span>
+    event:unblock(<span class="string">"luanotify"</span>, handler2)
+    event:emit(<span class="string">"luanotify"</span>)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_a_handler_must_be_unblocked_the_same_times_it_has_been_blocked()
+    <span class="keyword">local</span> handler = <span class="keyword">function</span> (name) call_counter = call_counter + <span class="number">1</span> <span class="keyword">end</span>
+
+    event:connect(<span class="string">"luanotify"</span>, handler)
+    event:block(<span class="string">"luanotify"</span>, handler)
+    event:block(<span class="string">"luanotify"</span>, handler)
+    event:block(<span class="string">"luanotify"</span>, handler)
+
+    event:emit(<span class="string">"luanotify"</span>)
+    assert_equal(<span class="number">0</span>, call_counter)
+
+    event:unblock(<span class="string">"luanotify"</span>, handler)
+    event:emit(<span class="string">"luanotify"</span>)
+    assert_equal(<span class="number">0</span>, call_counter)
+
+    event:unblock(<span class="string">"luanotify"</span>, handler)
+    event:emit(<span class="string">"luanotify"</span>)
+    assert_equal(<span class="number">0</span>, call_counter)
+
+    event:unblock(<span class="string">"luanotify"</span>, handler)
+    event:emit(<span class="string">"luanotify"</span>)
+    assert_equal(<span class="number">1</span>, call_counter)
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> test_a_handler_must_be_unblocked_the_same_times_and_on_the_same_event_it_has_been_blocked_not_parent_events()
+    <span class="keyword">local</span> handler = <span class="keyword">function</span> (name) call_counter = call_counter + <span class="number">1</span> <span class="keyword">end</span>
+
+    event:connect(<span class="string">"luanotify:event"</span>, handler)
+    event:block(<span class="string">"luanotify:event"</span>, handler)
+    event:block(<span class="string">"luanotify:event"</span>, handler)
+
+    event:emit(<span class="string">"luanotify:event"</span>)
+    assert_equal(<span class="number">0</span>, call_counter)
+
+    event:unblock(<span class="string">"luanotify:event"</span>, handler)
+    event:emit(<span class="string">"luanotify:event"</span>)
+    assert_equal(<span class="number">0</span>, call_counter)
+
+    event:unblock(<span class="string">"luanotify"</span>, handler)
+    event:emit(<span class="string">"luanotify:event"</span>)
+    assert_equal(<span class="number">0</span>, call_counter)
+
+    event:unblock(<span class="string">"luanotify:event"</span>, handler)
+    event:emit(<span class="string">"luanotify:event"</span>)
+    assert_equal(<span class="number">1</span>, call_counter)
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> test_a_handler_must_be_unblocked_the_same_times_and_on_the_same_event_it_has_been_blocked_not_child_events()
+    <span class="keyword">local</span> handler = <span class="keyword">function</span> (name) call_counter = call_counter + <span class="number">1</span> <span class="keyword">end</span>
+
+    event:connect(<span class="string">"luanotify:event"</span>, handler)
+    event:block(<span class="string">"luanotify:event"</span>, handler)
+    event:block(<span class="string">"luanotify:event"</span>, handler)
+
+    event:emit(<span class="string">"luanotify:event"</span>)
+    assert_equal(<span class="number">0</span>, call_counter)
+
+    event:unblock(<span class="string">"luanotify:event"</span>, handler)
+    event:emit(<span class="string">"luanotify:event"</span>)
+    assert_equal(<span class="number">0</span>, call_counter)
+
+    event:unblock(<span class="string">"luanotify:event:test"</span>, handler)
+    event:emit(<span class="string">"luanotify:event"</span>)
+    assert_equal(<span class="number">0</span>, call_counter)
+
+    event:unblock(<span class="string">"luanotify:event"</span>, handler)
+    event:emit(<span class="string">"luanotify:event"</span>)
+    assert_equal(<span class="number">1</span>, call_counter)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_pre_emit_functions_are_always_called_before_the_handlers_of_the_event()
+    <span class="keyword">local</span> handler1 = <span class="keyword">function</span> (name)
+                  assert_equal(<span class="number">0</span>, call_counter)
+                  call_counter = call_counter + <span class="number">1</span>
+               <span class="keyword">end</span>
+
+    <span class="keyword">local</span> handler2 = <span class="keyword">function</span> (name)
+                  assert_equal(<span class="number">1</span>, call_counter)
+                  call_counter = call_counter + <span class="number">1</span>
+               <span class="keyword">end</span>
+
+    <span class="keyword">local</span> pre_emit = <span class="keyword">function</span> (name)
+                  assert_equal(<span class="number">0</span> , call_counter)
+               <span class="keyword">end</span>
+
+    event:connect(<span class="string">"luanotify:event"</span>, handler1)
+    event:connect(<span class="string">"luanotify:event"</span>, handler2)
+    event:add_pre_emit(<span class="string">"luanotify:event"</span>, pre_emit)
+    event:emit(<span class="string">"luanotify:event"</span>)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_the_same_pre_emit_can_be_added_on_multiple_events()
+    <span class="keyword">local</span> pre_emit = <span class="keyword">function</span> (name) call_counter = call_counter + <span class="number">1</span> <span class="keyword">end</span>
+
+    event:add_pre_emit(<span class="string">"luanotify:event:test1"</span>, pre_emit)
+    event:add_pre_emit(<span class="string">"luanotify:event:test2"</span>, pre_emit)
+
+    assert_equal(<span class="number">0</span>, call_counter)
+    event:emit(<span class="string">"luanotify:event:test1"</span>)
+    assert_equal(<span class="number">1</span>, call_counter)
+    event:emit(<span class="string">"luanotify:event:test2"</span>)
+    assert_equal(<span class="number">2</span>, call_counter)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_if_the_same_pre_emit_is_added_multiple_times_on_the_same_event_it_will_be_called_only_once()
+    <span class="keyword">local</span> pre_emit = <span class="keyword">function</span> (name) call_counter = call_counter + <span class="number">1</span> <span class="keyword">end</span>
+
+    event:add_pre_emit(<span class="string">"luanotify:event:test"</span>, pre_emit)
+    event:add_pre_emit(<span class="string">"luanotify:event:test"</span>, pre_emit)
+    event:add_pre_emit(<span class="string">"luanotify:event:test"</span>, pre_emit)
+
+    assert_equal(<span class="number">0</span>, call_counter)
+    event:emit(<span class="string">"luanotify:event:test"</span>)
+    assert_equal(<span class="number">1</span>, call_counter)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_if_the_same_pre_emit_is_added_multiple_times_on_the_same_event_it_has_to_be_removed_only_once()
+    <span class="keyword">local</span> pre_emit = <span class="keyword">function</span> (name) call_counter = call_counter + <span class="number">1</span> <span class="keyword">end</span>
+
+    event:add_pre_emit(<span class="string">"luanotify:event:test"</span>, pre_emit)
+    event:add_pre_emit(<span class="string">"luanotify:event:test"</span>, pre_emit)
+    event:add_pre_emit(<span class="string">"luanotify:event:test"</span>, pre_emit)
+
+    assert_equal(<span class="number">0</span>, call_counter)
+    event:emit(<span class="string">"luanotify:event:test"</span>)
+    assert_equal(<span class="number">1</span>, call_counter)
+    event:remove_pre_emit(<span class="string">"luanotify:event:test"</span>, pre_emit)
+    event:emit(<span class="string">"luanotify:event:test"</span>)
+    assert_equal(<span class="number">1</span>, call_counter)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_pre_emit_functions_are_called_on_a_queue_behavior()
+    <span class="keyword">local</span> handler  = <span class="keyword">function</span> (name)
+                  assert_equal(<span class="number">2</span>, call_counter)
+                  call_counter = call_counter + <span class="number">1</span>
+               <span class="keyword">end</span>
+
+    <span class="keyword">local</span> pre_emit1 = <span class="keyword">function</span> (name)
+                  assert_equal(<span class="number">0</span>, call_counter)
+                  call_counter = call_counter + <span class="number">1</span>
+               <span class="keyword">end</span>
+
+    <span class="keyword">local</span> pre_emit2 = <span class="keyword">function</span> (name)
+                  assert_equal(<span class="number">1</span>, call_counter)
+                  call_counter = call_counter + <span class="number">1</span>
+               <span class="keyword">end</span>
+
+    event:connect(<span class="string">"luanotify:event"</span>, handler)
+    event:add_pre_emit(<span class="string">"luanotify:event"</span>, pre_emit1)
+    event:add_pre_emit(<span class="string">"luanotify:event"</span>, pre_emit2)
+    event:emit(<span class="string">"luanotify:event"</span>)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_if_you_remove_a_pre_emit_that_is_not_connected_to_the_event_nothing_happens()
+    <span class="keyword">local</span> pre_emit   = <span class="keyword">function</span> (name)
+                  assert_equal(<span class="number">0</span>, call_counter)
+               <span class="keyword">end</span>
+
+    event:remove_pre_emit(<span class="string">"luanotify:event"</span>, pre_emit)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_after_removing_a_pre_emit_function_the_order_of_the_remaining_pre_emits_remain_the_same()
+    <span class="keyword">local</span> pre_emit = <span class="keyword">function</span> (name)
+                         assert_equal(<span class="number">0</span>, call_counter)
+                         call_counter = call_counter + <span class="number">1</span>
+                     <span class="keyword">end</span>
+    <span class="keyword">local</span> handler1 = <span class="keyword">function</span> (name)
+                         assert_equal(<span class="number">1</span>, call_counter)
+                         call_counter = call_counter + <span class="number">1</span>
+                     <span class="keyword">end</span>
+    <span class="keyword">local</span> handler2 = <span class="keyword">function</span> (name)
+                         assert_equal(<span class="number">2</span>, call_counter)
+                         call_counter = call_counter + <span class="number">1</span>
+                     <span class="keyword">end</span>
+    <span class="keyword">local</span> handler3 = <span class="keyword">function</span> (name)
+                         assert_equal(<span class="number">3</span>, call_counter)
+                         call_counter = call_counter + <span class="number">1</span>
+                     <span class="keyword">end</span>
+
+    event:add_pre_emit(<span class="string">"luanotify:event:test"</span>, pre_emit)
+    event:connect(<span class="string">"luanotify:event:test"</span>, handler1)
+    event:connect(<span class="string">"luanotify:event:test"</span>, handler2)
+    event:connect(<span class="string">"luanotify:event:test"</span>, handler3)
+
+    event:emit(<span class="string">"luanotify:event:test"</span>)
+    assert_equal(<span class="number">4</span>, call_counter)
+    event:remove_pre_emit(<span class="string">"luanotify:event:test"</span>, pre_emit)
+    call_counter = <span class="number">1</span>
+    event:emit(<span class="string">"luanotify:event:test"</span>)
+    assert_equal(<span class="number">4</span>, call_counter)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_pre_emit_functions_are_called_only_once_before_the_handlers()
+    <span class="keyword">local</span> handler1 = <span class="keyword">function</span> (name)
+                  assert_equal(<span class="number">1</span>, call_counter)
+                  call_counter = call_counter + <span class="number">1</span>
+               <span class="keyword">end</span>
+
+    <span class="keyword">local</span> handler2 = <span class="keyword">function</span> (name)
+                  assert_equal(<span class="number">2</span>, call_counter)
+                  call_counter = call_counter + <span class="number">1</span>
+               <span class="keyword">end</span>
+
+    <span class="keyword">local</span> pre_emit = <span class="keyword">function</span> (name)
+                  assert_equal(<span class="number">0</span> , call_counter)
+                  call_counter = call_counter + <span class="number">1</span>
+               <span class="keyword">end</span>
+
+    event:connect(<span class="string">"luanotify:event"</span>, handler1)
+    event:connect(<span class="string">"luanotify:event"</span>, handler2)
+    event:add_pre_emit(<span class="string">"luanotify:event"</span>, pre_emit)
+    event:emit(<span class="string">"luanotify:event"</span>)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_pre_emit_functions_are_called_only_before_the_handlers_of_the_exact_event_it_was_added_not_the_parent_events()
+    <span class="keyword">local</span> pre_emit = <span class="keyword">function</span> (name)
+                  assert_equal(<span class="number">0</span> , call_counter)
+                  call_counter = call_counter + <span class="number">1</span>
+               <span class="keyword">end</span>
+
+    event:add_pre_emit(<span class="string">"luanotify:event"</span>, pre_emit)
+    event:emit(<span class="string">"luanotify"</span>)
+    assert_equal(<span class="number">0</span>, call_counter)
+    event:emit(<span class="string">"luanotify:event"</span>)
+    assert_equal(<span class="number">1</span>, call_counter)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_pre_emit_functions_are_called_only_before_the_handlers_of_the_exact_event_it_was_added_not_the_child_events()
+    <span class="keyword">local</span> pre_emit = <span class="keyword">function</span> (name)
+                  assert_equal(<span class="number">0</span> , call_counter)
+                  call_counter = call_counter + <span class="number">1</span>
+               <span class="keyword">end</span>
+
+    event:add_pre_emit(<span class="string">"luanotify:event"</span>, pre_emit)
+    event:emit(<span class="string">"luanotify"</span>)
+    assert_equal(<span class="number">0</span>, call_counter)
+    event:emit(<span class="string">"luanotify:event"</span>)
+    assert_equal(<span class="number">1</span>, call_counter)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_if_you_add_a_pre_emit_on_a_event_that_does_not_have_any_connected_handlers_it_is_called()
+    <span class="keyword">local</span> pre_emit = <span class="keyword">function</span> (name)
+                  assert_equal(<span class="number">0</span> , call_counter)
+                  call_counter = call_counter + <span class="number">1</span>
+               <span class="keyword">end</span>
+
+    event:add_pre_emit(<span class="string">"luanotify:event"</span>, pre_emit)
+    event:emit(<span class="string">"luanotify:event"</span>)
+    assert_equal(<span class="number">1</span>, call_counter)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_no_emission_data_is_passed_to_the_pre_emit_functions()
+    <span class="keyword">local</span> pre_emit = <span class="keyword">function</span> (name, arg)
+                         assert_nil(arg)
+                         call_counter = call_counter + <span class="number">1</span>
+                     <span class="keyword">end</span>
+
+    event:add_pre_emit(<span class="string">"luanotify:event"</span>, pre_emit)
+    event:emit(<span class="string">"luanotify:event"</span>, <span class="string">"pineapple"</span>)
+    assert_equal(<span class="number">1</span>, call_counter)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_after_being_removed_a_pre_emit_function_wont_be_called_anymore()
+    pre_emit1 = <span class="keyword">function</span> (name)
+                  assert_equal(<span class="number">0</span>, call_counter)
+                  call_counter = call_counter + <span class="number">1</span>
+               <span class="keyword">end</span>
+
+    pre_emit2 = <span class="keyword">function</span> (name)
+                  assert_equal(<span class="number">1</span>, call_counter)
+                  call_counter = call_counter + <span class="number">1</span>
+               <span class="keyword">end</span>
+
+    <span class="keyword">local</span> offset = <span class="number">0</span>
+    pre_emit3 = <span class="keyword">function</span> (name)
+                  assert_equal(<span class="number">2</span> - offset, call_counter)
+                  call_counter = call_counter + <span class="number">1</span>
+               <span class="keyword">end</span>
+
+    event:add_pre_emit(<span class="string">"luanotify:event"</span>, pre_emit1)
+    event:add_pre_emit(<span class="string">"luanotify:event"</span>, pre_emit2)
+    event:add_pre_emit(<span class="string">"luanotify:event"</span>, pre_emit3)
+    event:emit(<span class="string">"luanotify:event"</span>)
+
+    event:remove_pre_emit(<span class="string">"luanotify:event"</span>, pre_emit2)
+    offset = <span class="number">1</span>; call_counter = <span class="number">0</span>
+    event:emit(<span class="string">"luanotify:event"</span>)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_post_emit_functions_are_called_only_after_the_handlers_of_the_exact_event_it_was_added_not_the_parent_events()
+    <span class="keyword">local</span> post_emit = <span class="keyword">function</span> (name)
+                  assert_equal(<span class="number">0</span> , call_counter)
+                  call_counter = call_counter + <span class="number">1</span>
+               <span class="keyword">end</span>
+
+    event:add_post_emit(<span class="string">"luanotify:event"</span>, post_emit)
+    event:emit(<span class="string">"luanotify"</span>)
+    assert_equal(<span class="number">0</span>, call_counter)
+    event:emit(<span class="string">"luanotify:event"</span>)
+    assert_equal(<span class="number">1</span>, call_counter)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_post_emit_functions_are_called_only_after_the_handlers_of_the_exact_event_it_was_added_not_the_child_events()
+    <span class="keyword">local</span> post_emit = <span class="keyword">function</span> (name)
+                  assert_equal(<span class="number">0</span> , call_counter)
+                  call_counter = call_counter + <span class="number">1</span>
+               <span class="keyword">end</span>
+
+    event:add_post_emit(<span class="string">"luanotify:event"</span>, post_emit)
+    event:emit(<span class="string">"luanotify"</span>)
+    assert_equal(<span class="number">0</span>, call_counter)
+    event:emit(<span class="string">"luanotify:event"</span>)
+    assert_equal(<span class="number">1</span>, call_counter)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_post_emit_functions_are_always_called_after_the_handlers()
+    <span class="keyword">local</span> handler1 = <span class="keyword">function</span> (name)
+                  assert_equal(<span class="number">0</span>, call_counter)
+                  call_counter = call_counter + <span class="number">1</span>
+               <span class="keyword">end</span>
+
+    <span class="keyword">local</span> handler2 = <span class="keyword">function</span> (name)
+                  assert_equal(<span class="number">1</span>, call_counter)
+                  call_counter = call_counter + <span class="number">1</span>
+               <span class="keyword">end</span>
+
+    <span class="keyword">local</span> post_emit = <span class="keyword">function</span> (name)
+                  assert_equal(<span class="number">2</span> , call_counter)
+                  call_counter = call_counter + <span class="number">1</span>
+                <span class="keyword">end</span>
+
+    event:connect(<span class="string">"luanotify:event"</span>, handler1)
+    event:connect(<span class="string">"luanotify:event"</span>, handler2)
+    event:add_post_emit(<span class="string">"luanotify:event"</span>, post_emit)
+    event:emit(<span class="string">"luanotify:event"</span>)
+    assert_equal(<span class="number">3</span>, call_counter)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_the_same_post_emit_can_be_added_on_multiple_events()
+    <span class="keyword">local</span> post_emit = <span class="keyword">function</span> (name) call_counter = call_counter + <span class="number">1</span> <span class="keyword">end</span>
+
+    event:add_post_emit(<span class="string">"luanotify:event:test1"</span>, post_emit)
+    event:add_post_emit(<span class="string">"luanotify:event:test2"</span>, post_emit)
+
+    assert_equal(<span class="number">0</span>, call_counter)
+    event:emit(<span class="string">"luanotify:event:test1"</span>)
+    assert_equal(<span class="number">1</span>, call_counter)
+    event:emit(<span class="string">"luanotify:event:test2"</span>)
+    assert_equal(<span class="number">2</span>, call_counter)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_post_emit_functions_are_called_only_once_after_the_handlers()
+    <span class="keyword">local</span> handler1 = <span class="keyword">function</span> (name)
+                  assert_equal(<span class="number">0</span>, call_counter)
+                  call_counter = call_counter + <span class="number">1</span>
+               <span class="keyword">end</span>
+
+    <span class="keyword">local</span> handler2 = <span class="keyword">function</span> (name)
+                  assert_equal(<span class="number">1</span>, call_counter)
+                  call_counter = call_counter + <span class="number">1</span>
+               <span class="keyword">end</span>
+
+    <span class="keyword">local</span> post_emit = <span class="keyword">function</span> (name)
+                  assert_equal(<span class="number">2</span> , call_counter)
+                  call_counter = call_counter + <span class="number">1</span>
+                <span class="keyword">end</span>
+
+    event:connect(<span class="string">"luanotify:event"</span>, handler1)
+    event:connect(<span class="string">"luanotify:event"</span>, handler2)
+    event:add_post_emit(<span class="string">"luanotify:event"</span>, post_emit)
+    event:emit(<span class="string">"luanotify:event"</span>)
+    assert_equal(<span class="number">3</span>, call_counter)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_no_emission_data_is_passed_to_the_post_emit_functions()
+    <span class="keyword">local</span> post_emit = <span class="keyword">function</span> (name, arg)
+                          assert_nil(arg)
+                          call_counter = call_counter + <span class="number">1</span>
+                      <span class="keyword">end</span>
+
+    event:add_post_emit(<span class="string">"luanotify:event"</span>, post_emit)
+    event:emit(<span class="string">"luanotify:event"</span>, <span class="string">"pineapple"</span>)
+    assert_equal(<span class="number">1</span>, call_counter)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_after_being_removed_a_post_emit_function_wont_be_called_anymore()
+    <span class="keyword">local</span> offset = <span class="number">0</span>
+    <span class="keyword">local</span> post_emit1 = <span class="keyword">function</span> (name)
+                  assert_equal(<span class="number">2</span> - offset, call_counter)
+                  call_counter = call_counter + <span class="number">1</span>
+               <span class="keyword">end</span>
+
+    <span class="keyword">local</span> post_emit2 = <span class="keyword">function</span> (name)
+                  assert_equal(<span class="number">1</span>, call_counter)
+                  call_counter = call_counter + <span class="number">1</span>
+               <span class="keyword">end</span>
+
+    <span class="keyword">local</span> post_emit3 = <span class="keyword">function</span> (name)
+                  assert_equal(<span class="number">0</span>, call_counter)
+                  call_counter = call_counter + <span class="number">1</span>
+               <span class="keyword">end</span>
+
+    event:add_post_emit(<span class="string">"luanotify:event"</span>, post_emit1)
+    event:add_post_emit(<span class="string">"luanotify:event"</span>, post_emit2)
+    event:add_post_emit(<span class="string">"luanotify:event"</span>, post_emit3)
+    event:emit(<span class="string">"luanotify:event"</span>)
+
+    event:remove_post_emit(<span class="string">"luanotify:event"</span>, post_emit2)
+    offset = <span class="number">1</span>; call_counter = <span class="number">0</span>
+    event:emit(<span class="string">"luanotify:event"</span>)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_if_the_same_post_emit_is_added_multiple_times_on_the_same_event_it_will_be_called_only_once()
+    <span class="keyword">local</span> post_emit = <span class="keyword">function</span> (name)
+                  call_counter = call_counter + <span class="number">1</span>
+               <span class="keyword">end</span>
+
+    event:add_post_emit(<span class="string">"luanotify:event"</span>, post_emit)
+    event:add_post_emit(<span class="string">"luanotify:event"</span>, post_emit)
+    event:add_post_emit(<span class="string">"luanotify:event"</span>, post_emit)
+    event:emit(<span class="string">"luanotify:event"</span>)
+    assert_equal(<span class="number">1</span>, call_counter)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_if_the_same_post_emit_is_added_multiple_times_on_the_same_event_it_has_to_be_removed_only_once()
+    <span class="keyword">local</span> post_emit = <span class="keyword">function</span> (name)
+                  call_counter = call_counter + <span class="number">1</span>
+               <span class="keyword">end</span>
+
+    event:add_post_emit(<span class="string">"luanotify:event"</span>, post_emit)
+    event:add_post_emit(<span class="string">"luanotify:event"</span>, post_emit)
+    event:add_post_emit(<span class="string">"luanotify:event"</span>, post_emit)
+    event:emit(<span class="string">"luanotify:event"</span>)
+    assert_equal(<span class="number">1</span>, call_counter)
+    
+    event:remove_post_emit(<span class="string">"luanotify:event"</span>, post_emit)
+    event:emit(<span class="string">"luanotify:event"</span>)
+    assert_equal(<span class="number">1</span>, call_counter)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_post_emit_functions_are_called_on_a_stack_behavior()
+    <span class="keyword">local</span> post_emit1 = <span class="keyword">function</span> (name)
+                  assert_equal(<span class="number">0</span>, call_counter)
+                  call_counter = call_counter + <span class="number">1</span>
+               <span class="keyword">end</span>
+
+    <span class="keyword">local</span> post_emit2 = <span class="keyword">function</span> (name)
+                  assert_equal(<span class="number">1</span>, call_counter)
+                  call_counter = call_counter + <span class="number">1</span>
+               <span class="keyword">end</span>
+
+    <span class="keyword">local</span> post_emit3 = <span class="keyword">function</span> (name)
+                  assert_equal(<span class="number">2</span>, call_counter)
+                  call_counter = call_counter + <span class="number">1</span>
+               <span class="keyword">end</span>
+
+    assert_equal(<span class="number">0</span>, call_counter)
+    event:add_post_emit(<span class="string">"luanotify:event"</span>, post_emit3)
+    event:add_post_emit(<span class="string">"luanotify:event"</span>, post_emit2)
+    event:add_post_emit(<span class="string">"luanotify:event"</span>, post_emit1)
+    event:emit(<span class="string">"luanotify:event"</span>)
+    assert_equal(<span class="number">3</span>, call_counter)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_after_removing_a_post_emit_function_the_order_of_the_post_emits_remain_the_same()
+    <span class="keyword">local</span> post_emit1 = <span class="keyword">function</span> (name)
+                  assert_equal(<span class="number">0</span>, call_counter)
+                  call_counter = call_counter + <span class="number">1</span>
+               <span class="keyword">end</span>
+
+    <span class="keyword">local</span> post_emit2 = <span class="keyword">function</span> (name)
+                  assert_equal(<span class="number">1</span>, call_counter)
+                  call_counter = call_counter + <span class="number">1</span>
+               <span class="keyword">end</span>
+
+    <span class="keyword">local</span> offset = <span class="number">0</span>
+    <span class="keyword">local</span> post_emit3 = <span class="keyword">function</span> (name)
+                  assert_equal(<span class="number">2</span> - offset, call_counter)
+                  call_counter = call_counter + <span class="number">1</span>
+               <span class="keyword">end</span>
+
+    assert_equal(<span class="number">0</span>, call_counter)
+    event:add_post_emit(<span class="string">"luanotify:event"</span>, post_emit3)
+    event:add_post_emit(<span class="string">"luanotify:event"</span>, post_emit2)
+    event:add_post_emit(<span class="string">"luanotify:event"</span>, post_emit1)
+    event:emit(<span class="string">"luanotify:event"</span>)
+    assert_equal(<span class="number">3</span>, call_counter)
+
+    event:remove_post_emit(<span class="string">"luanotify:event"</span>, post_emit2)
+    offset = <span class="number">1</span>; call_counter = <span class="number">0</span>
+    event:emit(<span class="string">"luanotify:event"</span>)
+    assert_equal(<span class="number">2</span>, call_counter)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_if_you_add_a_post_emit_on_a_event_that_does_not_have_any_connected_handlers_it_is_called()
+    <span class="keyword">local</span> post_emit  = <span class="keyword">function</span> (name)
+                           call_counter = <span class="number">1</span>
+                       <span class="keyword">end</span>
+
+    event:add_post_emit(<span class="string">"luanotify"</span>, post_emit)
+    call_counter = <span class="number">0</span>
+    event:emit(<span class="string">"luanotify"</span>)
+    assert_equal(call_counter, <span class="number">1</span>)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_if_you_remove_a_post_emit_that_has_not_been_added_nothing_happens()
+    <span class="keyword">local</span> post_emit  = <span class="keyword">function</span> ()
+                           assert_equal(<span class="number">0</span>, call_counter)
+                       <span class="keyword">end</span>
+
+    event:remove_post_emit(<span class="string">"luanotify:event"</span>, post_emit)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_the_return_value_of_each_handler_is_passed_to_the_accumulator()
+    <span class="keyword">local</span> handler1 = <span class="keyword">function</span> (name)
+                         assert_equal(<span class="number">0</span>, call_counter)
+                         call_counter = call_counter + <span class="number">1</span>
+                         <span class="keyword">return</span> call_counter
+                     <span class="keyword">end</span>
+
+    <span class="keyword">local</span> handler2 = <span class="keyword">function</span> (name)
+                         assert_equal(<span class="number">1</span>, call_counter)
+                         call_counter = call_counter + <span class="number">1</span>
+                         <span class="keyword">return</span> call_counter
+                     <span class="keyword">end</span>
+
+    <span class="keyword">local</span> counter = <span class="number">0</span>
+
+    <span class="keyword">local</span> accumulator = <span class="keyword">function</span> (arg1)
+                            counter = counter + arg1
+                        <span class="keyword">end</span>
+
+    event:connect(<span class="string">"luanotify:event"</span>, handler1)
+    event:connect(<span class="string">"luanotify:event"</span>, handler2)
+    event:emit_with_accumulator(<span class="string">"luanotify:event"</span>, accumulator)
+    assert_equal(<span class="number">2</span>, call_counter)
+    assert_equal(<span class="number">3</span>, counter)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_the_return_value_of_each_handler_on_all_the_events_on_the_branch_of_the_emitted_event_are_passed_to_the_accumulator()
+    <span class="keyword">local</span> handler1 = <span class="keyword">function</span> (name)
+                         assert_equal(<span class="number">0</span>, call_counter)
+                         call_counter = call_counter + <span class="number">1</span>
+                         <span class="keyword">return</span> call_counter
+                     <span class="keyword">end</span>
+
+    <span class="keyword">local</span> handler2 = <span class="keyword">function</span> (name)
+                         assert_equal(<span class="number">1</span>, call_counter)
+                         call_counter = call_counter + <span class="number">1</span>
+                         <span class="keyword">return</span> call_counter
+                     <span class="keyword">end</span>
+
+    <span class="keyword">local</span> counter = <span class="number">0</span>
+
+    <span class="keyword">local</span> accumulator = <span class="keyword">function</span> (arg1)
+                            counter = counter + arg1
+                        <span class="keyword">end</span>
+
+    event:connect(<span class="string">"luanotify"</span>, handler1)
+    event:connect(<span class="string">"luanotify:event"</span>, handler2)
+    event:emit_with_accumulator(<span class="string">"luanotify:event"</span>, accumulator)
+    assert_equal(<span class="number">2</span>, call_counter)
+    assert_equal(<span class="number">3</span>, counter)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_after_the_execution_of_each_handler_the_accumulator_is_called()
+    <span class="keyword">local</span> handler1 = <span class="keyword">function</span> (name)
+                         call_counter = call_counter + <span class="number">1</span>
+                     <span class="keyword">end</span>
+
+    <span class="keyword">local</span> handler2 = <span class="keyword">function</span> (name)
+                         call_counter = call_counter + <span class="number">1</span>
+                     <span class="keyword">end</span>
+
+    <span class="keyword">local</span> counter = <span class="number">0</span>
+
+    <span class="keyword">local</span> accumulator = <span class="keyword">function</span> ()
+                            counter = counter + <span class="number">1</span>
+                            assert_equal(call_counter, counter)
+                        <span class="keyword">end</span>
+
+    event:connect(<span class="string">"luanotify:event"</span>, handler1)
+    event:connect(<span class="string">"luanotify:event"</span>, handler2)
+    event:emit_with_accumulator(<span class="string">"luanotify:event"</span>, accumulator)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_even_when_the_handler_returns_nil_it_is_repassed_to_the_accumulator()
+    <span class="keyword">local</span> handler = <span class="keyword">function</span> ()
+                    <span class="keyword">end</span>
+
+    <span class="keyword">local</span> accumulator = <span class="keyword">function</span> (arg)
+                            assert_nil(arg)
+                        <span class="keyword">end</span>
+
+    event:connect(<span class="string">"luanotify:event"</span>, handler)
+    event:emit_with_accumulator(<span class="string">"luanotify:event"</span>, accumulator)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_the_handlers_can_return_multiple_values_to_the_accumulator()
+    <span class="keyword">local</span> handler = <span class="keyword">function</span> (name)
+                        <span class="keyword">return</span> <span class="number">1</span>, <span class="number">2</span>
+                    <span class="keyword">end</span>
+
+    <span class="keyword">local</span> accumulator = <span class="keyword">function</span> (arg1, arg2)
+                            assert_equal(arg1, <span class="number">1</span>)
+                            assert_equal(arg2, <span class="number">2</span>)
+                        <span class="keyword">end</span>
+
+    event:connect(<span class="string">"luanotify:event"</span>, handler)
+    event:emit_with_accumulator(<span class="string">"luanotify:event"</span>, accumulator)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_pre_emit_functions_return_values_are_not_passed_to_the_accumulator()
+    <span class="keyword">local</span> pre_emit = <span class="keyword">function</span> (name)
+                       <span class="keyword">return</span> <span class="number">1</span>
+                   <span class="keyword">end</span>
+
+    <span class="keyword">local</span> handler = <span class="keyword">function</span> (name)
+                       <span class="keyword">return</span> <span class="number">2</span>
+                    <span class="keyword">end</span>
+
+    <span class="keyword">local</span> accumulator = <span class="keyword">function</span> (arg)
+                            assert_equal(arg, <span class="number">2</span>)
+                        <span class="keyword">end</span>
+
+    event:add_pre_emit(<span class="string">"luanotify:event"</span>, pre_emit)
+    event:connect(<span class="string">"luanotify:event"</span>, handler)
+    event:emit_with_accumulator(<span class="string">"luanotify:event"</span>, accumulator)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_post_emit_functions_return_values_are_not_passed_to_the_accumulator()
+    <span class="keyword">local</span> post_emit = <span class="keyword">function</span> (name)
+                       <span class="keyword">return</span> <span class="number">1</span>
+                   <span class="keyword">end</span>
+
+    <span class="keyword">local</span> handler = <span class="keyword">function</span> (name)
+                       <span class="keyword">return</span> <span class="number">2</span>
+                    <span class="keyword">end</span>
+
+    <span class="keyword">local</span> accumulator = <span class="keyword">function</span> (arg)
+                            assert_equal(arg, <span class="number">2</span>)
+                        <span class="keyword">end</span>
+
+    event:add_post_emit(<span class="string">"luanotify:event"</span>, post_emit)
+    event:connect(<span class="string">"luanotify:event"</span>, handler)
+    event:emit_with_accumulator(<span class="string">"luanotify:event"</span>, accumulator)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_after_a_stop_no_more_handlers_are_called_on_that_emission()
+    <span class="keyword">local</span> handler1 = <span class="keyword">function</span> (name)
+                         assert_equal(<span class="number">0</span>, call_counter)
+                         call_counter = call_counter + <span class="number">1</span>
+                     <span class="keyword">end</span>
+
+    <span class="keyword">local</span> handler2 = <span class="keyword">function</span> (name)
+                         assert_equal(<span class="number">1</span>, call_counter)
+                         call_counter = call_counter + <span class="number">1</span>
+                         event:stop()
+                     <span class="keyword">end</span>
+
+    <span class="keyword">local</span> handler3 = <span class="keyword">function</span> (name)
+                         call_counter = call_counter + <span class="number">1</span>
+                     <span class="keyword">end</span>
+
+    event:connect(<span class="string">"luanotify:event"</span>, handler1)
+    event:connect(<span class="string">"luanotify:event"</span>, handler2)
+    event:connect(<span class="string">"luanotify:event"</span>, handler3)
+
+    assert_equal(<span class="number">0</span>, call_counter)
+    event:emit(<span class="string">"luanotify:event"</span>)
+    assert_equal(<span class="number">2</span>, call_counter)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_emission_can_be_stopped_inside_a_handler()
+    <span class="keyword">local</span> handler1 = <span class="keyword">function</span> (name)
+                         assert_equal(<span class="number">0</span>, call_counter)
+                         call_counter = call_counter + <span class="number">1</span>
+                         event:stop()
+                     <span class="keyword">end</span>
+
+    <span class="keyword">local</span> handler2 = <span class="keyword">function</span> (name)
+                         assert_equal(<span class="number">1</span>, call_counter)
+                         call_counter = call_counter + <span class="number">1</span>
+                     <span class="keyword">end</span>
+
+    event:connect(<span class="string">"luanotify:event"</span>, handler1)
+    event:connect(<span class="string">"luanotify:event"</span>, handler2)
+
+    event:emit(<span class="string">"luanotify:event"</span>)
+    assert_equal(<span class="number">1</span>, call_counter)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_emission_can_be_stopped_inside_any_handler_on_the_emitted_event_branch()
+    <span class="keyword">local</span> handler1 = <span class="keyword">function</span> (name)
+                         assert_equal(<span class="number">0</span>, call_counter)
+                         call_counter = call_counter + <span class="number">1</span>
+                         event:stop()
+                     <span class="keyword">end</span>
+
+    <span class="keyword">local</span> handler2 = <span class="keyword">function</span> (name)
+                         assert_equal(<span class="number">1</span>, call_counter)
+                         call_counter = call_counter + <span class="number">1</span>
+                     <span class="keyword">end</span>
+
+    event:connect(<span class="string">"luanotify"</span>, handler1)
+    event:connect(<span class="string">"luanotify:event"</span>, handler2)
+
+    event:emit(<span class="string">"luanotify:event"</span>)
+    assert_equal(<span class="number">1</span>, call_counter)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_emission_can_be_stopped_inside_a_pre_emit()
+    <span class="keyword">local</span> pre_emit = <span class="keyword">function</span> (name)
+                         assert_equal(<span class="number">0</span>, call_counter)
+                         call_counter = call_counter + <span class="number">1</span>
+                         event:stop()
+                     <span class="keyword">end</span>
+
+    <span class="keyword">local</span> handler1 = <span class="keyword">function</span> (name)
+                         assert_equal(<span class="number">1</span>, call_counter)
+                         call_counter = call_counter + <span class="number">1</span>
+                     <span class="keyword">end</span>
+
+    event:add_pre_emit(<span class="string">"luanotify"</span>, pre_emit)
+    event:connect(<span class="string">"luanotify:event"</span>, handler1)
+
+    event:emit(<span class="string">"luanotify:event"</span>)
+    assert_equal(<span class="number">1</span>, call_counter)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_emission_can_be_stopped_inside_a_accumulator()
+    <span class="keyword">local</span> handler1 = <span class="keyword">function</span> (name)
+                        assert_equal(<span class="number">0</span>, call_counter)
+                        call_counter = call_counter + <span class="number">1</span>
+                     <span class="keyword">end</span>
+
+    <span class="keyword">local</span> handler2 = <span class="keyword">function</span> (name)
+                        assert_equal(<span class="number">1</span>, call_counter)
+                        call_counter = call_counter + <span class="number">1</span>
+                     <span class="keyword">end</span>
+
+    <span class="keyword">local</span> accumulator = <span class="keyword">function</span> ()
+                            event:stop()
+                        <span class="keyword">end</span>
+
+    event:connect(<span class="string">"luanotify:event"</span>, handler1)
+    event:connect(<span class="string">"luanotify:event"</span>, handler2)
+    event:emit_with_accumulator(<span class="string">"luanotify:event"</span>, accumulator)
+    assert_equal(<span class="number">1</span>, call_counter)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_stopping_will_not_stop_the_pre_emit_functions()
+    <span class="keyword">local</span> pre_emit1 = <span class="keyword">function</span> (name)
+                        assert_equal(<span class="number">0</span>, call_counter)
+                        call_counter = call_counter + <span class="number">1</span>
+                        event:stop()
+                    <span class="keyword">end</span>
+
+    <span class="keyword">local</span> pre_emit2 = <span class="keyword">function</span> (name)
+                        assert_equal(<span class="number">1</span>, call_counter)
+                        call_counter = call_counter + <span class="number">1</span>
+                    <span class="keyword">end</span>
+
+    <span class="keyword">local</span> handler = <span class="keyword">function</span> (name)
+                        assert_equal(<span class="number">2</span>, call_counter)
+                        call_counter = call_counter + <span class="number">1</span>
+                    <span class="keyword">end</span>
+
+    event:add_pre_emit(<span class="string">"luanotify:event"</span>, pre_emit1)
+    event:add_pre_emit(<span class="string">"luanotify:event"</span>, pre_emit2)
+    event:connect(<span class="string">"luanotify:event"</span>, handler)
+    event:emit(<span class="string">"luanotify:event"</span>)
+    assert_equal(<span class="number">2</span>, call_counter)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_stopping_will_not_stop_the_post_emit_functions()
+    <span class="keyword">local</span> post_emit = <span class="keyword">function</span> (name)
+                          assert_equal(<span class="number">1</span>, call_counter)
+                          call_counter = call_counter + <span class="number">1</span>
+                      <span class="keyword">end</span>
+
+    <span class="keyword">local</span> handler1 = <span class="keyword">function</span> (name)
+                         assert_equal(<span class="number">0</span>, call_counter)
+                         call_counter = call_counter + <span class="number">1</span>
+                         event:stop()
+                     <span class="keyword">end</span>
+
+    <span class="keyword">local</span> handler2 = <span class="keyword">function</span> (name)
+                         assert_equal(<span class="number">1</span>, call_counter)
+                         call_counter = call_counter + <span class="number">1</span>
+                     <span class="keyword">end</span>
+
+    event:add_post_emit(<span class="string">"luanotify:event"</span>, post_emit)
+    event:connect(<span class="string">"luanotify:event"</span>, handler1)
+    event:connect(<span class="string">"luanotify:event"</span>, handler2)
+    event:emit(<span class="string">"luanotify:event"</span>)
+    assert_equal(<span class="number">2</span>, call_counter)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_when_emitting_a_subevent_all_handlers_connected_to_the_subevent_branch_are_called()
+    <span class="keyword">local</span> handler = <span class="keyword">function</span> (name) call_counter = call_counter + <span class="number">1</span> <span class="keyword">end</span>
+
+    event:connect(<span class="string">"luanotify"</span>, handler)
+    event:connect(<span class="string">"luanotify:event"</span>, handler)
+    event:connect(<span class="string">"luanotify:event:test"</span>, handler)
+    assert_equal(<span class="number">0</span>, call_counter)
+    event:emit(<span class="string">"luanotify:event:test"</span>)
+    assert_equal(<span class="number">3</span>, call_counter)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_on_a_subevent_emission_the_handlers_on_the_subevent_branch_are_called_from_the_top_to_the_bottom()
+    <span class="keyword">local</span> handler1 = <span class="keyword">function</span> (name)
+                         assert_equal(<span class="number">0</span>, call_counter)
+                         call_counter = call_counter + <span class="number">1</span>
+                     <span class="keyword">end</span>
+
+    <span class="keyword">local</span> handler2 = <span class="keyword">function</span> (name)
+                         assert_equal(<span class="number">1</span>, call_counter)
+                         call_counter = call_counter + <span class="number">1</span>
+                     <span class="keyword">end</span>
+
+    event:connect(<span class="string">"luanotify"</span>, handler1)
+    event:connect(<span class="string">"luanotify:event"</span>, handler2)
+    event:emit(<span class="string">"luanotify:event"</span>)
+    assert_equal(<span class="number">2</span>, call_counter)
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> test_setting_the_event_instance_to_nil_does_not_stop_event_emission()
+    <span class="keyword">local</span> evt = Event.new()
+ 
+    <span class="keyword">local</span> handler1 = <span class="keyword">function</span> (name)
+                         assert_equal(<span class="number">0</span>, call_counter)
+                         assert_nil(evt)
+                         call_counter = call_counter + <span class="number">1</span>
+                         <span class="global">collectgarbage</span>(<span class="string">"collect"</span>)
+                     <span class="keyword">end</span>
+
+    <span class="keyword">local</span> handler2 = <span class="keyword">function</span> (name)
+                         assert_equal(<span class="number">1</span>, call_counter)
+                         assert_nil(evt)
+                         call_counter = call_counter + <span class="number">1</span>
+                         <span class="global">collectgarbage</span>(<span class="string">"collect"</span>)
+                     <span class="keyword">end</span>
+
+    <span class="keyword">local</span> handler3 = <span class="keyword">function</span> (name)
+                         assert_equal(<span class="number">2</span>, call_counter)
+                         assert_nil(evt)
+                         call_counter = call_counter + <span class="number">1</span>
+                         <span class="global">collectgarbage</span>(<span class="string">"collect"</span>)
+                     <span class="keyword">end</span>
+
+    evt:add_pre_emit(<span class="string">"luanotify"</span>, <span class="keyword">function</span>() evt = <span class="keyword">nil</span> 
+                                             <span class="global">collectgarbage</span>(<span class="string">"collect"</span>) 
+                                  <span class="keyword">end</span> )
+
+    evt:connect(<span class="string">"luanotify"</span>, handler1)
+    evt:connect(<span class="string">"luanotify"</span>, handler2)
+    evt:connect(<span class="string">"luanotify"</span>, handler3)
+    evt:emit(<span class="string">"luanotify"</span>)
+
+    assert_equal(<span class="number">3</span>, call_counter)
+    assert_nil(evt)
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> test_on_a_subevent_emission_only_handlers_from_the_parents_are_called_not_from_child_events()
+    <span class="keyword">local</span> handler = <span class="keyword">function</span> (name) call_counter = call_counter + <span class="number">1</span> <span class="keyword">end</span>
+
+    event:connect(<span class="string">"luanotify"</span>, handler)
+    event:connect(<span class="string">"luanotify:event"</span>, handler)
+    event:connect(<span class="string">"luanotify:event:test"</span>, handler)
+    assert_equal(<span class="number">0</span>, call_counter)
+    event:emit(<span class="string">"luanotify:event"</span>)
+    assert_equal(<span class="number">2</span>, call_counter)
+<span class="keyword">end</span>
+
+lunit.main()
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.2</a></i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>

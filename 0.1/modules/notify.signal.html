@@ -1,0 +1,535 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>LuaNotify Documentation</title>
+    <link rel="stylesheet" href="../ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>LuaNotify</h1>
+
+<ul>
+  <li><a href="../index.html">Index</a></li>
+</ul>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Functions">Functions</a></li>
+</ul>
+
+
+<h2>Modules</h2>
+<ul>
+  <li><a href="../modules/notify.double-queue.html">notify.double-queue</a></li>
+  <li><a href="../modules/notify.event.html">notify.event</a></li>
+  <li><strong>notify.signal</strong></li>
+</ul>
+<h2>Topics</h2>
+<ul>
+  <li><a href="../topics/01-introduction.md.html">01-introduction.md</a></li>
+</ul>
+<h2>Examples</h2>
+<ul>
+  <li><a href="../examples/double-queue.lua.html">double-queue.lua</a></li>
+  <li><a href="../examples/event.lua.html">event.lua</a></li>
+  <li><a href="../examples/signal.lua.html">signal.lua</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Module <code>notify.signal</code></h1>
+
+<p>Signal object implementation.</p>
+<p>
+</p>
+
+<h2><a href="#Functions">Functions</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#SignalObject:disconnect">SignalObject:disconnect&nbsp;(handler_function)</a></td>
+	<td class="summary">Disconnects a handler function from this signal, the function will no longer be called.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#SignalObject:connect">SignalObject:connect&nbsp;(handler_function)</a></td>
+	<td class="summary">Connects a handler function on this signal, all handlers connected will be called 
+ when the signal is emitted with a FIFO  behaviour (The first connected will be the first called).</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#SignalObject:block">SignalObject:block&nbsp;(handler_function)</a></td>
+	<td class="summary">Does not execute the given handler function when the signal is emitted until it is unblocked.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#SignalObject:unblock">SignalObject:unblock&nbsp;(handler_function)</a></td>
+	<td class="summary">Unblocks the given handler function, this handler function will be executed on 
+ the order it was previously connected, and it will only be unblocked when 
+ the calls to unblock are equal to the calls to block.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#SignalObject:emit">SignalObject:emit&nbsp;(A)</a></td>
+	<td class="summary">Emits a signal calling the handler functions connected to this signal passing the given args.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#SignalObject:emit_with_accumulator">SignalObject:emit_with_accumulator&nbsp;(accumulator, A)</a></td>
+	<td class="summary">Typical signal emission discards handler return values completely.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#SignalObject:add_pre_emit">SignalObject:add_pre_emit&nbsp;(pre_emit_func)</a></td>
+	<td class="summary">Adds a pre_emit func, pre_emit functions cant be blocked, only added or removed, 
+ they cannot have their return collected by accumulators, will not receive any data passed 
+ on the emission and they are always called before ANY handler is called.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#SignalObject:remove_pre_emit">SignalObject:remove_pre_emit&nbsp;(pre_emit_func)</a></td>
+	<td class="summary">Removes the pre_emit function</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#SignalObject:add_post_emit">SignalObject:add_post_emit&nbsp;(post_emit_func)</a></td>
+	<td class="summary">Adds a post_emit function, post_emit functions cant be blocked, only added or removed, 
+ they cannot have their return collected by accumulators, they will not receive any data 
+ passed on the emission and they are always called after ALL handlers where called.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#SignalObject:remove_post_emit">SignalObject:remove_post_emit&nbsp;(post_emit_func)</a></td>
+	<td class="summary">Removes the post_emit function</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#SignalObject:stop">SignalObject:stop&nbsp;()</a></td>
+	<td class="summary">Stops the current emission, if there is any handler left to be called by the signal it wont be called.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Signal.new">Signal.new&nbsp;()</a></td>
+	<td class="summary">Creates a new SignalObject.</td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2><a name="Functions"></a>Functions</h2>
+    
+    <dl class="function">
+    <dt>
+    <a name = "SignalObject:disconnect"></a>
+    <strong>SignalObject:disconnect&nbsp;(handler_function)</strong>
+    </dt>
+    <dd>
+    <p>Disconnects a handler function from this signal, the function will no longer be called. 
+ Example:</p>
+
+<pre><code>local signal = require "notify.signal"
+local s = signal.new()
+
+function handler(arg)
+    print(arg)
+end
+
+s:connect(handler)
+s:emit("example") -- example gets printed
+s:disconnect(handler)
+s:emit("example") -- nothing gets printed
+</code></pre>
+
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>handler_function</em></code>:  – The function that will be disconnected.</li>
+    </ul>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "SignalObject:connect"></a>
+    <strong>SignalObject:connect&nbsp;(handler_function)</strong>
+    </dt>
+    <dd>
+    <p>Connects a handler function on this signal, all handlers connected will be called 
+ when the signal is emitted with a FIFO  behaviour (The first connected will be the first called). 
+ Example:</p>
+
+<pre><code>local signal = require "notify.signal"
+
+function handler1(arg)
+    print(arg.."1")
+end
+function handler2(arg)
+    print(arg.."2")
+end
+
+local s = signal.new()
+s:connect(handler1)
+s:connect(handler2)
+s:emit("example") -- example1 gets printed before example2.
+</code></pre>
+
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>handler_function</em></code>:  – The function that will be called when this signal is emitted.</li>
+    </ul>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "SignalObject:block"></a>
+    <strong>SignalObject:block&nbsp;(handler_function)</strong>
+    </dt>
+    <dd>
+    <p>Does not execute the given handler function when the signal is emitted until it is unblocked.<br/>
+ It can be called several times for the same handler function.
+ Example:</p>
+
+<pre><code>local signal = require "notify.signal"
+local s = signal.new()
+
+function handler(arg)
+    print(arg)
+end
+
+s:connect(handler)
+s:emit("example") -- example gets printed
+
+s:block(handler)
+s:emit("example") -- nothing gets printed
+</code></pre>
+
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>handler_function</em></code>:  – The handler function that will be blocked.</li>
+    </ul>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "SignalObject:unblock"></a>
+    <strong>SignalObject:unblock&nbsp;(handler_function)</strong>
+    </dt>
+    <dd>
+    <p>Unblocks the given handler function, this handler function will be executed on 
+ the order it was previously connected, and it will only be unblocked when 
+ the calls to unblock are equal to the calls to block. 
+ Example:</p>
+
+<pre><code>local signal = require "notify.signal"
+local s = signal.new()
+
+function handler(arg)
+    print(arg)
+end
+
+s:connect(handler)
+s:emit("example")  -- example gets printed
+
+s:block(handler)
+s:emit("example") -- nothing gets printed
+s:block(handler)
+s:emit("example") -- nothing gets printed
+
+s:unblock(handler)
+s:emit("example") -- nothing gets printed
+s:unblock(handler)
+s:emit("example") -- example gets printed
+</code></pre>
+
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>handler_function</em></code>:  – The handler function that will be unblocked.</li>
+    </ul>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "SignalObject:emit"></a>
+    <strong>SignalObject:emit&nbsp;(A)</strong>
+    </dt>
+    <dd>
+    <p>Emits a signal calling the handler functions connected to this signal passing the given args. </p>
+
+<pre><code>local signal = require "notify.signal"
+local s = signal.new()
+
+function handler1(arg1, arg2)
+    print(arg1)
+    print(arg2)
+end
+
+function handler2(arg)
+    print(arg)
+end
+
+s:connect(handler1)
+s:connect(handler2)
+s:emit("example") -- a nil will get printed because only one argument was passed
+s:emit("example1", "example2") -- No nil will get printed.
+s:emit() -- Only nils will get printed because no argument was passed.
+</code></pre>
+
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>A</em></code>:  optional list of parameters, they will be repassed to the handler functions connected to this signal.</li>
+    </ul>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "SignalObject:emit_with_accumulator"></a>
+    <strong>SignalObject:emit_with_accumulator&nbsp;(accumulator, A)</strong>
+    </dt>
+    <dd>
+    <p>Typical signal emission discards handler return values completely.<br/>
+ This is most often what you need: just inform the world about something. 
+ However, sometimes you need a way to get feedback. For instance, 
+ you may want to ask: “is this value acceptable ?”
+ This is what accumulators are for. Accumulators are specified to signals at emission time. 
+ They can combine, alter or discard handler return values, post-process them or even stop emission. 
+ Since a handler can return multiple values, accumulators can receive multiple args too, following 
+ Lua flexible style user has the freedom to do whatever he wants with accumulators.</p>
+
+<pre><code>local signal = require "notify.signal"
+local s = signal.new()
+
+function handler1(arg)
+    return arg * 2
+end
+
+function handler2(arg)
+    return arg * 3
+end
+
+local result = {}
+function accum(arg)
+    result[#result+1] = arg
+end
+
+s:connect(handler1)
+s:connect(handler2)
+
+s:emit_with_accumulator(accum, 2)
+
+for k,v in ipairs(result) do  -- print 4, 6
+    print(v)
+end
+</code></pre>
+
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>accumulator</em></code>:  – Function that will accumulate handlers results.</li>
+       <li><code><em>A</em></code>:  optional list of parameters, they will be repassed to the handler functions connected to this signal.</li>
+    </ul>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "SignalObject:add_pre_emit"></a>
+    <strong>SignalObject:add_pre_emit&nbsp;(pre_emit_func)</strong>
+    </dt>
+    <dd>
+    <p>Adds a pre_emit func, pre_emit functions cant be blocked, only added or removed, 
+ they cannot have their return collected by accumulators, will not receive any data passed 
+ on the emission and they are always called before ANY handler is called.<br/>
+ This is useful when you want to perform some global task before handling an event, 
+ like opening a socket that the handlers might need to use or a database, pre_emit functions 
+ can make sure everything is ok before handling an event, reducing the need to do this check_ups 
+ inside the handler function. They are called on a queue (FIFO) policy based on the order they added.</p>
+
+<pre><code>local signal = require "notify.signal"
+local s = signal.new()
+
+function handler1()
+    print(1)
+end
+
+function handler2()
+    print(2)
+end
+
+function pre_emit()
+    print("0")
+end
+
+s:connect(handler1)
+s:connect(handler2)
+s:emit() -- 1 and 2 printed.
+s:add_pre_emit(pre_emit)
+s:emit() -- 0,1 and 2 are printed.
+</code></pre>
+
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>pre_emit_func</em></code>:  – The pre_emit function.</li>
+    </ul>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "SignalObject:remove_pre_emit"></a>
+    <strong>SignalObject:remove_pre_emit&nbsp;(pre_emit_func)</strong>
+    </dt>
+    <dd>
+    Removes the pre_emit function 
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>pre_emit_func</em></code>:  – The pre_emit function.</li>
+    </ul>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "SignalObject:add_post_emit"></a>
+    <strong>SignalObject:add_post_emit&nbsp;(post_emit_func)</strong>
+    </dt>
+    <dd>
+    <p>Adds a post_emit function, post_emit functions cant be blocked, only added or removed, 
+ they cannot have their return collected by accumulators, they will not receive any data 
+ passed on the emission and they are always called after ALL handlers where called.<br/>
+ This is useful when you want to perform some global task after handling an event, 
+ like closing a socket that the handlers might need to use or a database or do some cleanup. 
+ post_emit functions can make sure everything is released after handling an event, 
+ reducing the need to do this check_ups inside some handler function, since some resources 
+ can be shared by multiple handlers. They are called on a stack (LIFO) policy based on the order they added.
+ Example:</p>
+
+<pre><code>local signal = require "notify.signal"
+local s = signal.new()
+
+function handler1()
+    print(1)
+end
+
+function handler2()
+    print(2)
+end
+
+function post_emit()
+    print("3")
+end
+
+s:connect(handler1)
+s:connect(handler2)
+s:emit() -- 1 and 2 printed.
+s:add_post_emit(post_emit)
+s:emit() -- 1, 2 and 3 are printed.
+</code></pre>
+
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>post_emit_func</em></code>:  – The post_emit function.</li>
+    </ul>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "SignalObject:remove_post_emit"></a>
+    <strong>SignalObject:remove_post_emit&nbsp;(post_emit_func)</strong>
+    </dt>
+    <dd>
+    Removes the post_emit function 
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>post_emit_func</em></code>:  – The post_emit function.</li>
+    </ul>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "SignalObject:stop"></a>
+    <strong>SignalObject:stop&nbsp;()</strong>
+    </dt>
+    <dd>
+    <p>Stops the current emission, if there is any handler left to be called by the signal it wont be called. 
+ Example:</p>
+
+<pre><code>local signal = require "notify.signal"
+local s = signal.new()
+
+local function handler1()
+    print("hanlder1")
+    signal:stop()
+end
+
+local function handler2()
+    print("hanlder2")
+end
+
+s:connect(handler1)
+s:connect(handler2)
+s:emit() -- handler2 never gets printed because handler1 always stops the emission
+</code></pre>
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Signal.new"></a>
+    <strong>Signal.new&nbsp;()</strong>
+    </dt>
+    <dd>
+    Creates a new SignalObject. 
+
+
+
+
+
+</dd>
+</dl>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.2</a></i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>
